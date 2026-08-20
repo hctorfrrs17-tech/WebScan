@@ -10,4 +10,4 @@
 - [x] Add report history, exportable evidence, and transparent coverage limitations.
 - [x] Add automated tests for authorization, target validation, finding prioritization, and prompt safety.
 - [x] Write an English README, contribution guidance, and security policy.
-- [ ] Create and publish the public GitHub repository for WebScan.
+- [x] Create and publish the GitHub repository for WebScan.
