@@ -20,7 +20,7 @@
 
 ## ✨ What is WebScan?
 
-WebScan coordinates **15 defensive agents** to help an authorized website owner turn observable security signals and carefully redacted owner evidence into a prioritized remediation plan. The agents examine public-response controls plus selected source, configuration, dependency, CI, deployment, logging, and cryptography evidence. A review shows what was observed, how confident WebScan is, what remains outside coverage, how to verify a fix, and a safe coding-assistant brief for the next engineering step.
+WebScan coordinates **15 defensive agents** to help an authorized website owner turn observable security signals and carefully redacted owner evidence into a prioritized remediation plan. A review shows what was observed, how confident WebScan is, what remains outside coverage, how to verify a fix, and a safe coding-assistant brief for the next engineering step.
 
 > **No account. No sign-in. No password.** WebScan begins with a website URL, an explicit authorization acknowledgement, and a one-time domain-verification file. Local review history stays in the browser on the device being used.
 
@@ -56,8 +56,6 @@ Then open [http://127.0.0.1:5173](http://127.0.0.1:5173). The `pnpm dev` command
 | **03 — Verify** | Publish the one-time token at `/.well-known/webscan-verification.txt`. |
 | **04 — Review** | Run the bounded defensive review and inspect the score, agent coverage, limits, findings, and repair brief. |
 
-> TIP: The more information, files, and code you provide, the better the security analysis will be—and consequently, the security of your website or web app can be further improved.
-
 
 ## 🤖 15-agent coverage
 
@@ -87,6 +85,8 @@ Read [AGENT_COVERAGE.md](AGENT_COVERAGE.md) for the complete evidence map and bo
 
 Owner evidence is **optional**, but it makes the authentication, authorization, input, dependency, supply-chain, deployment, logging, and storage agents substantially more useful. WebScan accepts up to eight small text files for the current review only, such as selected `.ts`/`.tsx`/`.js` files, `package.json`, lockfiles, CI workflows, redacted deployment configuration, or a safe `settings.txt` template.
 
+> TIP: The more information, files, and code you provide, the better the security analysis will be—and consequently, the security of your website or web app can be further improved.
+
 | ✅ Appropriate evidence | ⛔ Never submit |
 | --- | --- |
 | Selected source files with the relevant control flow | Real `.env` files, credentials, tokens, private keys, connection strings, or personal data |
@@ -109,9 +109,7 @@ The PDF never includes raw cookie values, credentials, submitted evidence conten
 
 ## 🧪 Controlled expanded audit
 
-> This controlled test covers prepared, redacted evidence rather than a complete production application. A fully authorized site with its own database, login, registration, password recovery, administration, API integrations, and deployment configuration can provide substantially more evidence for the agents to review. WebScan still reports only concrete signals; it does not claim to find every vulnerability.
-
-The PDF below is **real output from a controlled regression fixture**, not a third-party assessment. The controlled response intentionally omitted selected browser protections, used an incomplete test cookie, configured an invalid credentialed wildcard CORS response, referenced HTTP resources, submitted a test form to HTTP, and contained a token-like browser-storage call. It was accompanied by eight small redacted, non-production evidence files containing deliberate signals for authentication, authorization, input handling, configuration, dependencies, CI, deployment, logging, and cryptography. No real credentials, live secrets, or customer data were supplied.
+> The PDF below is a report test made with a simple web made with [Manus AI](https://manus.im/app). In a real web ( authentication, password resets, real database, API Keys, secrets...) WebScan would've found *many* more vulnerabilities and therefore the report would be better and the security improvement much better. 
 
 ### Result snapshot
 
@@ -126,18 +124,12 @@ The PDF below is **real output from a controlled regression fixture**, not a thi
 
 ### What the agents observed
 
-| Agent area | Representative result from the controlled test |
-| --- | --- |
-| Transport, browser isolation, and input safety | HSTS, CSP, framing, MIME, browser-permission controls, and an HTTP form action were absent or unsafe in the fixture. |
-| Session, privacy, and client exposure | The test cookie did not include the complete Secure/HttpOnly/SameSite posture; Referrer-Policy was absent; the page used an HTTP resource and token-like browser storage. Cookie values were never retained. |
-| API and configuration | The fixture exposed a request-controlled redirect pattern, a wildcard credentialed CORS response, and a disabled TLS-validation configuration signal. |
-| Owner-evidence agents | The agents identified deliberate redacted signals for literal JWT material, client-controlled object lookup, request-derived shell execution, unsafe HTML rendering, broad CI permissions, privileged deployment, sensitive logging, lifecycle scripts, and weak cryptographic handling. No evidence excerpt was retained. |
 
 ### Detailed PDF result
 
-The controlled audit was rendered into a **28-page A4 PDF** after the review. It contains the score and scope, explicit readouts for all 15 agents, the 29 evidence-backed findings, their individual observed signal/required change/acceptance check fields, and the **complete consolidated remediation prompt** on the final page. It does **not** tell an AI coding assistant to generically “review login”, “review storage”, or “review configuration”; every requested change is tied to observed evidence.
+The controlled audit was rendered into a **28-page A4 PDF** after the review. It contains the score and scope, explicit readouts for all 15 agents, the 29 evidence-backed findings, their individual observed signal/required change/acceptance check fields, and the **complete consolidated remediation prompt** on the final page.
 
-**Controlled-audit PDF:** [Download the 15-agent report](https://github.com/hctorfrrs17-tech/WebScan/raw/refs/heads/main/examples/controlled-audit-report.pdf). This link downloads the file directly and does not use GitHub's code preview.
+**Audit test PDF:** [Download the 15-agent report](https://github.com/hctorfrrs17-tech/WebScan/raw/refs/heads/main/examples/controlled-audit-report.pdf). 
 
 ## 🔐 Safety boundary
 
