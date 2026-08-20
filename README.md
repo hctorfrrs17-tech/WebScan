@@ -162,3 +162,7 @@ WebScan uses the OWASP Application Security Verification Standard v5.0.0 as a gu
 
 [1]: https://owasp.org/www-project-application-security-verification-standard/ "OWASP Application Security Verification Standard"
 [2]: https://owasp.org/www-project-web-security-testing-guide/ "OWASP Web Security Testing Guide"
+
+## 📜 License
+
+WebScan is released under the [MIT License](LICENSE).
