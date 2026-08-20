@@ -1,13 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { isIP } from "node:net";
 import { lookup } from "node:dns/promises";
-import type { AssessmentReport, Finding, FindingStatus, Severity, SpecialistSummary, VerificationChallenge } from "../shared/types.js";
+import type { AssessmentReport, Finding, FindingStatus, OwnerEvidenceFile, Severity, SpecialistSummary, VerificationChallenge } from "../shared/types.js";
+import { summarizeOwnerEvidence } from "./ownerEvidence.js";
 
 const MAX_RESPONSE_BYTES = 240_000;
 
 export type TargetRecord = {
   challenge: VerificationChallenge;
   verifiedAt?: string;
+  ownerEvidence: OwnerEvidenceFile[];
 };
 
 export type SafeResponse = {
@@ -98,7 +100,7 @@ export function buildFindings(response: SafeResponse): Finding[] {
   const findings: Finding[] = [];
   const url = new URL(response.url);
   findings.push(finding({
-    specialist: "Surface & transport",
+    specialist: "Transport agent",
     title: url.protocol === "https:" ? "HTTPS transport observed" : "Target does not use HTTPS",
     severity: url.protocol === "https:" ? "info" : "high",
     status: url.protocol === "https:" ? "pass" : "attention",
@@ -110,29 +112,29 @@ export function buildFindings(response: SafeResponse): Finding[] {
     reference: "OWASP ASVS v5.0.0 — Communications Security"
   }));
   findings.push(headerFinding({
-    specialist: "Surface & transport", header: "strict-transport-security", title: "HSTS policy", headers: response.headers,
+    specialist: "Transport agent", header: "strict-transport-security", title: "HSTS policy", headers: response.headers,
     impact: "Without HSTS, returning visitors may be more exposed to protocol-downgrade risks.", remediation: "Set a reviewed Strict-Transport-Security policy once all subdomains are ready for HTTPS.", reference: "OWASP ASVS v5.0.0 — Communications Security", severity: "medium"
   }));
   findings.push(headerFinding({
-    specialist: "Application exposure", header: "content-security-policy", title: "Content Security Policy", headers: response.headers,
+    specialist: "Browser isolation agent", header: "content-security-policy", title: "Content Security Policy", headers: response.headers,
     impact: "A missing CSP removes an important browser-side containment layer against script injection impacts.", remediation: "Implement a restrictive, tested Content-Security-Policy and progressively remove broad script allowances.", reference: "OWASP ASVS v5.0.0 — Encoding and Sanitization", severity: "medium"
   }));
   findings.push(headerFinding({
-    specialist: "Data protection", header: "referrer-policy", title: "Referrer policy", headers: response.headers,
+    specialist: "Data privacy agent", header: "referrer-policy", title: "Referrer policy", headers: response.headers,
     impact: "Sensitive paths or query parameters can be disclosed to destinations through browser referrer behavior.", remediation: "Set a reviewed Referrer-Policy such as strict-origin-when-cross-origin, subject to product requirements.", reference: "OWASP ASVS v5.0.0 — Data Protection", severity: "low"
   }));
   findings.push(headerFinding({
-    specialist: "Application exposure", header: "x-content-type-options", title: "MIME sniffing protection", headers: response.headers,
+    specialist: "Browser isolation agent", header: "x-content-type-options", title: "MIME sniffing protection", headers: response.headers,
     impact: "Without an explicit no-sniff directive, browsers may infer unexpected content types in edge cases.", remediation: "Set X-Content-Type-Options: nosniff for relevant responses and validate declared MIME types.", reference: "OWASP ASVS v5.0.0 — File Handling", severity: "low"
   }));
   findings.push(headerFinding({
-    specialist: "Data protection", header: "permissions-policy", title: "Permissions policy", headers: response.headers,
+    specialist: "Browser isolation agent", header: "permissions-policy", title: "Permissions policy", headers: response.headers,
     impact: "Browser features may be available more broadly than the application needs.", remediation: "Define a Permissions-Policy that disables browser features not required by the product.", reference: "OWASP ASVS v5.0.0 — Secure Coding", severity: "low"
   }));
 
   const server = response.headers.get("server") || response.headers.get("x-powered-by");
   findings.push(finding({
-    specialist: "Application exposure",
+    specialist: "Client exposure agent",
     title: "Technology disclosure",
     severity: server ? "low" : "info",
     status: server ? "observe" : "pass",
@@ -148,7 +150,7 @@ export function buildFindings(response: SafeResponse): Finding[] {
   if (cookies.length) {
     const missingAttributes = cookies.some((cookie) => !/;\s*secure/i.test(cookie) || !/;\s*httponly/i.test(cookie) || !/;\s*samesite=/i.test(cookie));
     findings.push(finding({
-      specialist: "Identity & sessions",
+      specialist: "Session agent",
       title: missingAttributes ? "Observed cookie hardening is incomplete" : "Observed cookies include common hardening attributes",
       severity: missingAttributes ? "medium" : "info",
       status: missingAttributes ? "attention" : "pass",
@@ -161,14 +163,14 @@ export function buildFindings(response: SafeResponse): Finding[] {
     }));
   } else {
     findings.push(finding({
-      specialist: "Identity & sessions", title: "No cookies observed on the reviewed response", severity: "info", status: "observe", confidence: "low",
+      specialist: "Session agent", title: "No cookies observed on the reviewed response", severity: "info", status: "observe", confidence: "low",
       evidence: "The verified response did not set a cookie; authenticated and stateful flows were not exercised.", impact: "Session security cannot be concluded from this public response alone.", remediation: "Provide authenticated-flow evidence or source configuration for a fuller session review.", verification: "Review sign-in, recovery, and authenticated routes with owner-provided test evidence.", reference: "OWASP ASVS v5.0.0 — Authentication and Session Management"
     }));
   }
 
   const mixedContent = /(?:src|href)=["']http:\/\//i.test(response.html);
   findings.push(finding({
-    specialist: "Application exposure", title: mixedContent ? "Potential HTTP resource reference" : "No HTTP asset reference observed in sampled HTML", severity: mixedContent ? "medium" : "info", status: mixedContent ? "attention" : "pass", confidence: response.html ? "medium" : "low",
+    specialist: "Client exposure agent", title: mixedContent ? "Potential HTTP resource reference" : "No HTTP asset reference observed in sampled HTML", severity: mixedContent ? "medium" : "info", status: mixedContent ? "attention" : "pass", confidence: response.html ? "medium" : "low",
     evidence: response.html ? (mixedContent ? "The sampled HTML contains at least one http:// resource reference." : "The sampled HTML did not contain an http:// resource reference.") : "The reviewed response was not HTML; client asset references were not inspected.",
     impact: mixedContent ? "Insecure subresource references can weaken a secure page or be blocked by browsers." : "This limited HTML sample did not expose an HTTP asset reference.",
     remediation: mixedContent ? "Replace HTTP resource references with HTTPS sources and add reporting or enforcement through CSP where appropriate." : "Continue enforcing secure asset delivery in templates and build output.",
@@ -177,15 +179,48 @@ export function buildFindings(response: SafeResponse): Finding[] {
   return findings;
 }
 
+function evidenceFinding(input: Omit<Finding, "id">): Finding { return finding(input); }
+
+export function buildOwnerEvidenceFindings(files: OwnerEvidenceFile[]): Finding[] {
+  if (!files.length) return [];
+  const content = files.map((file) => file.content).join("\n");
+  const names = files.map((file) => file.name);
+  const has = (pattern: RegExp) => pattern.test(content);
+  const checks: Array<{ specialist: string; title: string; evidence: string; pattern?: RegExp; severity?: Severity; impact: string; remediation: string; verification: string; reference: string }> = [
+    { specialist: "Authentication agent", title: "Authentication evidence review", evidence: "Reviewed owner-provided redacted authentication and configuration evidence.", pattern: /password|login|signIn|authenticate|oauth|sso/i, severity: "medium", impact: "Authentication logic requires explicit review because public responses cannot prove safe credential handling.", remediation: "Review credential storage, reset flows, MFA decisions, and server-side authentication enforcement in the relevant modules.", verification: "Add tests covering sign-in, failed sign-in, recovery, session renewal, and logout behavior.", reference: "OWASP ASVS v5.0.0 — Authentication" },
+    { specialist: "Authorization agent", title: "Authorization boundary evidence review", evidence: "Reviewed owner-provided redacted route and source evidence for authorization cues.", pattern: /role|permission|tenant|ownerId|userId|authorize|access/i, severity: "medium", impact: "Authorization rules need server-side and object-level verification beyond public-response checks.", remediation: "Enforce authorization server-side for every protected action and validate ownership/tenant boundaries before accessing records.", verification: "Add tests for unauthorized roles, cross-tenant resources, and ownership changes.", reference: "OWASP ASVS v5.0.0 — Authorization" },
+    { specialist: "Input safety agent", title: "Input-handling evidence review", evidence: "Reviewed owner-provided redacted source for input-handling cues.", pattern: /innerHTML|dangerouslySetInnerHTML|eval\(|new Function\(/i, severity: "high", impact: "Unsafe rendering or dynamic execution patterns can increase input-driven risk.", remediation: "Remove unsafe dynamic execution where possible; validate input at trust boundaries and use context-appropriate encoding.", verification: "Add validation and rendering tests for malformed, unexpected, and user-controlled input.", reference: "OWASP ASVS v5.0.0 — Encoding and Sanitization" },
+    { specialist: "API & error agent", title: "API and error-handling evidence review", evidence: "Reviewed owner-provided redacted server evidence for route and error-handling cues.", pattern: /stack|console\.error|throw new Error|res\.status/i, severity: "low", impact: "Error behavior can reveal implementation detail or produce inconsistent client responses if not normalized.", remediation: "Use consistent error handling, avoid returning stack traces, and log sensitive context only through a reviewed server-side policy.", verification: "Test expected errors and confirm client responses do not expose internals.", reference: "OWASP WSTG — Error Handling" },
+    { specialist: "Configuration hygiene agent", title: "Configuration hygiene evidence review", evidence: "Reviewed redacted configuration templates and file names without retaining their content in the report.", pattern: /process\.env|import\.meta\.env|config\.|environment/i, severity: "medium", impact: "Configuration determines whether development assumptions and sensitive behavior reach production.", remediation: "Keep secrets outside source control, use placeholder examples, validate required configuration at startup, and separate development and production defaults.", verification: "Review configuration templates and startup validation with safe placeholder values.", reference: "OWASP ASVS v5.0.0 — Secure Coding" },
+    { specialist: "Dependency agent", title: "Dependency evidence review", evidence: `Reviewed ${names.filter((name) => /package\.json|lock/i.test(name)).length || 0} manifest or lockfile artifact(s) supplied by the owner.`, pattern: /"(?:latest|\*)"|\^0\./i, severity: "medium", impact: "Unpinned or early-version dependency ranges can make supply-chain review and repeatable builds harder.", remediation: "Maintain a reviewed lockfile, inventory dependencies, and update vulnerable packages through a tested release process.", verification: "Confirm the manifest and lockfile are present, reproducible, and reviewed in CI.", reference: "OWASP ASVS v5.0.0 — Dependency Management" },
+    { specialist: "Supply-chain agent", title: "Build and release evidence review", evidence: "Reviewed owner-provided workflow and release configuration cues.", pattern: /pull_request_target|npm install|curl\s+.*\|\s*(?:sh|bash)/i, severity: "medium", impact: "Build and release workflows can introduce risk when untrusted code or unpinned installers run with broad privileges.", remediation: "Review CI permissions, pin trusted actions and installers, and separate untrusted pull-request work from privileged release actions.", verification: "Inspect workflow permissions and add policy checks for risky workflow patterns.", reference: "OWASP ASVS v5.0.0 — Secure Development" },
+    { specialist: "Deployment agent", title: "Deployment posture evidence review", evidence: "Reviewed owner-provided redacted deployment configuration cues.", pattern: /dockerfile|helm|vercel|netlify|render|railway|nginx|caddy/i, severity: "low", impact: "Deployment configuration determines runtime exposure, headers, environment separation, and operational guardrails.", remediation: "Review production headers, runtime permissions, environment isolation, and platform-specific hardening against the deployment configuration.", verification: "Validate a deployment checklist against the reviewed production configuration.", reference: "OWASP ASVS v5.0.0 — Configuration" },
+    { specialist: "Logging & recovery agent", title: "Logging and recovery evidence review", evidence: "Reviewed owner-provided redacted source for logging and recovery-flow cues.", pattern: /console\.log|logger\.|recover|reset|forgot/i, severity: "medium", impact: "Logs and recovery workflows can expose sensitive data or weaken account recovery if not designed deliberately.", remediation: "Redact sensitive fields in logs, set retention rules, and require secure verification before recovery state changes.", verification: "Add tests that confirm secrets, tokens, and recovery artifacts never reach client responses or logs.", reference: "OWASP ASVS v5.0.0 — Logging" },
+    { specialist: "Storage & cryptography agent", title: "Storage and cryptography evidence review", evidence: "Reviewed owner-provided redacted source and architecture cues for storage and cryptography references.", pattern: /encrypt|decrypt|crypto|hash|s3|storage|database|sql/i, severity: "medium", impact: "Storage and cryptography decisions affect confidentiality, integrity, retention, and key separation.", remediation: "Document the data lifecycle, use approved cryptographic primitives through maintained libraries, and keep keys separate from protected data.", verification: "Review data flows and add tests for encrypted transport, access boundaries, and retention behavior.", reference: "OWASP ASVS v5.0.0 — Cryptography and Data Protection" }
+  ];
+  return checks.map((check) => {
+    const matched = check.pattern ? has(check.pattern) : false;
+    return evidenceFinding({ specialist: check.specialist, title: check.title, severity: matched ? check.severity ?? "medium" : "info", status: matched ? "attention" : "observe", confidence: matched ? "medium" : "low", evidence: `${check.evidence} ${matched ? "Potentially relevant implementation cues were detected; no source excerpt is retained." : "No deterministic high-risk cue was identified in the limited redacted evidence."}`, impact: check.impact, remediation: check.remediation, verification: check.verification, reference: check.reference });
+  });
+}
+
 export function specialistSummaries(findings: Finding[]): SpecialistSummary[] {
   const catalog = [
-    ["surface", "Surface & transport", "HTTPS, redirects and browser response controls"],
-    ["identity", "Identity & sessions", "Cookie and session posture observed on safe responses"],
-    ["access", "Access control", "Requires source or owner-provided route evidence"],
-    ["data", "Data protection", "Privacy and browser data-exposure controls"],
-    ["exposure", "Application exposure", "Client delivery and public technology exposure"],
-    ["dependencies", "Dependencies & supply chain", "Requires a manifest or lockfile from the owner"],
-    ["deployment", "Deployment posture", "Requires deployment configuration from the owner"]
+    ["transport", "Transport agent", "HTTPS, redirects, HSTS and secure response delivery"],
+    ["browser", "Browser isolation agent", "CSP, framing, MIME and browser permissions"],
+    ["session", "Session agent", "Visible cookies and session posture"],
+    ["auth", "Authentication agent", "Owner-provided authentication evidence"],
+    ["authorization", "Authorization agent", "Owner-provided role, tenant and ownership evidence"],
+    ["input", "Input safety agent", "Validation, encoding and unsafe-rendering cues"],
+    ["client", "Client exposure agent", "Client delivery, metadata and HTTP-resource cues"],
+    ["api", "API & error agent", "Route and error-handling evidence"],
+    ["privacy", "Data privacy agent", "Referrer and sensitive-data handling cues"],
+    ["config", "Configuration hygiene agent", "Redacted configuration template evidence"],
+    ["dependencies", "Dependency agent", "Manifest and lockfile evidence"],
+    ["supply-chain", "Supply-chain agent", "Build, CI and release evidence"],
+    ["deployment", "Deployment agent", "Redacted runtime and hosting configuration"],
+    ["logging", "Logging & recovery agent", "Logging and recovery-flow evidence"],
+    ["storage", "Storage & cryptography agent", "Storage, cryptography and lifecycle evidence"]
   ] as const;
   return catalog.map(([id, label, focus]) => {
     const specialistFindings = findings.filter((item) => item.specialist === label);
@@ -205,11 +240,12 @@ export function buildRemediationPrompt(report: Pick<AssessmentReport, "target" |
 }
 
 export function createReport(record: TargetRecord, response: SafeResponse): AssessmentReport {
-  const findings = buildFindings(response);
+  const evidenceSummary = summarizeOwnerEvidence(record.ownerEvidence);
+  const findings = [...buildFindings(response), ...buildOwnerEvidenceFindings(record.ownerEvidence)];
   const score = scoreFindings(findings);
   const grade = score >= 90 ? "A" : score >= 75 ? "B" : score >= 60 ? "C" : score >= 40 ? "D" : "E";
-  const coverage = ["Verified public response", "Transport and response headers", "Visible cookie attributes", "Sampled HTML asset references", "Public technology hints"];
-  const limitations = ["No credentialed testing or authentication bypass attempts", "No active exploitation, fuzzing, brute force, or denial-of-service testing", "Access control, dependencies, and deployment require owner-provided source or configuration evidence"];
+  const coverage = ["Verified public response", "Transport and response headers", "Visible cookie attributes", "Sampled HTML asset references", "Public technology hints", evidenceSummary.ownerEvidenceProvided ? `${evidenceSummary.sourceFilesReviewed} redacted owner-evidence file(s), processed for this review only` : "Owner-evidence agents remain limited until redacted source or configuration files are supplied"];
+  const limitations = ["No credentialed testing or authentication bypass attempts", "No active exploitation, fuzzing, brute force, or denial-of-service testing", evidenceSummary.ownerEvidenceProvided ? "Source review is limited to the selected redacted excerpts supplied by the owner" : "Authentication, authorization, dependencies, deployment, logging, and storage agents require owner-provided redacted evidence"];
   const core = { target: record.challenge.target, findings, coverage, limitations };
   return {
     id: record.challenge.id,
@@ -221,6 +257,7 @@ export function createReport(record: TargetRecord, response: SafeResponse): Asse
     coverage,
     limitations,
     specialists: specialistSummaries(findings),
+    evidenceSummary,
     findings,
     generatedPrompt: buildRemediationPrompt(core)
   };

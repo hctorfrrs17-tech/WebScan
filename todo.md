@@ -17,3 +17,7 @@
 - [x] Capture and add real WebScan interface screenshots to repository assets and documentation.
 - [x] Run a verified audit against a temporary website controlled for this test and preserve its report and remediation prompt as documentation evidence.
 - [x] Rewrite the README to be more visual, scannable, emoji-supported, and explicit about the no-account workflow and export formats.
+- [x] Expand WebScan to 15 named defensive agents with explicit evidence sources, coverage limits, and non-exploitative checks.
+- [x] Update the assessment UI, exports, tests, controlled-audit example, and README to use the term “agents” consistently.
+- [x] Add an owner-evidence intake for redacted source, dependency, and deployment material without accepting secrets.
+- [ ] Make the WebScan GitHub repository public after the 15-agent update is validated.

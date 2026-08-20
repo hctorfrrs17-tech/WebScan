@@ -23,6 +23,18 @@ export type SpecialistSummary = {
   findingCount: number;
 };
 
+export type OwnerEvidenceFile = {
+  name: string;
+  content: string;
+};
+
+export type EvidenceSummary = {
+  ownerEvidenceProvided: boolean;
+  sourceFilesReviewed: number;
+  reviewedFileTypes: string[];
+  handling: "current-review-only";
+};
+
 export type AssessmentReport = {
   id: string;
   target: string;
@@ -33,6 +45,7 @@ export type AssessmentReport = {
   coverage: string[];
   limitations: string[];
   specialists: SpecialistSummary[];
+  evidenceSummary: EvidenceSummary;
   findings: Finding[];
   generatedPrompt: string;
 };

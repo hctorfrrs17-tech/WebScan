@@ -1,12 +1,13 @@
 import express from "express";
 import { randomBytes, randomUUID } from "node:crypto";
 import { createReport, fetchSafely, parsePublicTarget, type TargetRecord } from "./assessment.js";
+import { validateOwnerEvidence } from "./ownerEvidence.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 8787);
 const records = new Map<string, TargetRecord>();
 
-app.use(express.json({ limit: "32kb" }));
+app.use(express.json({ limit: "96kb" }));
 app.use((_, response, next) => {
   response.setHeader("Cache-Control", "no-store");
   response.setHeader("X-Content-Type-Options", "nosniff");
@@ -15,7 +16,7 @@ app.use((_, response, next) => {
 
 app.post("/api/challenges", async (request, response) => {
   try {
-    const { target, authorizationConfirmed } = request.body as { target?: string; authorizationConfirmed?: boolean };
+    const { target, authorizationConfirmed, ownerEvidence } = request.body as { target?: string; authorizationConfirmed?: boolean; ownerEvidence?: unknown };
     if (!authorizationConfirmed) return response.status(400).json({ error: "Confirm that you own the target or have written authorization before continuing." });
     const parsed = parsePublicTarget(target ?? "");
     const id = randomUUID();
@@ -28,8 +29,9 @@ app.post("/api/challenges", async (request, response) => {
       challengePath: "/.well-known/webscan-verification.txt",
       instructions: `Create https://${parsed.hostname}/.well-known/webscan-verification.txt containing exactly this token.`
     };
-    records.set(id, { challenge });
-    response.status(201).json(challenge);
+    const evidence = validateOwnerEvidence(ownerEvidence);
+    records.set(id, { challenge, ownerEvidence: evidence });
+    response.status(201).json({ ...challenge, ownerEvidenceAccepted: evidence.length, evidenceHandling: "current-review-only" });
   } catch (error) {
     response.status(400).json({ error: error instanceof Error ? error.message : "Unable to prepare the verification challenge." });
   }

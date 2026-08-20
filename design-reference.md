@@ -7,3 +7,5 @@ The typography will pair a compact editorial display face for headings with a mo
 The redesigned landing and report views were checked locally. Both now present the warm paper field, technical grid, cyan-blue principal accent, green/yellow/rust signals, square editorial cards, offset shadows, display headings, and monospaced technical interface. The authorization flow, findings, coverage boundary, local history, export action, and remediation prompt remain visible and operational.
 
 Two real interface captures were validated for the repository: the authorization-gated landing workspace and the report overview. The report capture visibly exposes the three safe export choices: JSON, Markdown, and print-ready HTML.
+
+The expanded interface was also checked locally: the landing workspace displays all 15 named agents and the optional redacted owner-evidence intake, while the report displays a 15-agent readout, explicit agent coverage, and a current-review-only evidence summary.

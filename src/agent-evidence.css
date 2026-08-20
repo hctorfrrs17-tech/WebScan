@@ -1,0 +1,7 @@
+.evidence-intake { border: 1px dashed rgba(36,35,31,.55); background: rgba(220,238,250,.34); padding: 13px 14px; margin: 4px 0 2px; }
+.evidence-intake > label { display: flex; justify-content: space-between; align-items: baseline; font: 700 10px "DM Mono", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.evidence-intake > label span { color: #17628d; font-size: 9px; }
+.evidence-intake input { width: 100%; margin: 9px 0 3px; color: #1d628f; font: 11px "DM Mono", ui-monospace, monospace; }
+.evidence-intake p { color: #5b605b; font: 10px/1.55 "DM Mono", ui-monospace, monospace; margin: 7px 0 0; }
+.evidence-files { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+.evidence-files span { background: #d8eee9; border: 1px solid rgba(42,121,103,.38); color: #225d4e; padding: 3px 5px; font: 9px "DM Mono", ui-monospace, monospace; }

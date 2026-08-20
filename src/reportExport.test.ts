@@ -3,7 +3,7 @@ import { createReportExport, reportToMarkdown, reportToPrintHtml } from "./repor
 import type { AssessmentReport } from "../shared/types";
 
 const report: AssessmentReport = {
-  id: "abc12345-def0", target: "https://demo.webscan.test", hostname: "demo.webscan.test", verifiedAt: "2026-08-20T12:00:00.000Z", score: 72, grade: "B", coverage: ["Headers"], limitations: ["No exploitation"], specialists: [{ id: "surface", label: "Surface", focus: "Headers", state: "complete", findingCount: 1 }], generatedPrompt: "Preserve behavior. Do not include exploit payloads.", findings: [{ id: "finding-1", specialist: "Surface", title: "A < CSP", severity: "medium", status: "attention", confidence: "high", evidence: "No cookie=secret is retained.", impact: "Containment is weaker.", remediation: "Add a policy.", verification: "Check headers." }]
+  id: "abc12345-def0", target: "https://demo.webscan.test", hostname: "demo.webscan.test", verifiedAt: "2026-08-20T12:00:00.000Z", score: 72, grade: "B", coverage: ["Headers"], limitations: ["No exploitation"], specialists: [{ id: "surface", label: "Surface", focus: "Headers", state: "complete", findingCount: 1 }], evidenceSummary: { ownerEvidenceProvided: false, sourceFilesReviewed: 0, reviewedFileTypes: [], handling: "current-review-only" }, generatedPrompt: "Preserve behavior. Do not include exploit payloads.", findings: [{ id: "finding-1", specialist: "Surface", title: "A < CSP", severity: "medium", status: "attention", confidence: "high", evidence: "No cookie=secret is retained.", impact: "Containment is weaker.", remediation: "Add a policy.", verification: "Check headers." }]
 };
 
 describe("WebScan report exports", () => {
@@ -12,12 +12,14 @@ describe("WebScan report exports", () => {
     expect(markdown).toContain("# WebScan defensive posture review");
     expect(markdown).toContain("AI coding remediation brief");
     expect(markdown).toContain("does not prove the absence of vulnerabilities");
+    expect(markdown).toContain("15-agent readout");
   });
 
   it("escapes dynamic content in the printable HTML output", () => {
     const html = reportToPrintHtml(report);
     expect(html).toContain("A &lt; CSP");
     expect(html).not.toContain("<h3>A < CSP</h3>");
+    expect(html).toContain("15-AGENT DEFENSIVE POSTURE REVIEW");
   });
 
   it("returns safe filenames and MIME types for every export format", () => {

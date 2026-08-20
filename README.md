@@ -1,31 +1,34 @@
 # WebScan
 
-> **🛡️ An authorization-gated security posture review for modern web apps.**
+> **🛡️ A 15-agent, authorization-gated defensive security posture review for modern web apps.**
 
 <p align="center">
-  <strong>Own the target. Verify control. Review the evidence. Fix with confidence.</strong>
+  <strong>Own the target. Verify control. Add redacted evidence. Review what the agents observed. Fix with confidence.</strong>
 </p>
 
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
+  <a href="#15-agent-coverage">15 agents</a> ·
+  <a href="#owner-evidence">Owner evidence</a> ·
   <a href="#real-controlled-audit">Real audit</a> ·
-  <a href="#exports">Exports</a> ·
-  <a href="#safety-boundary">Safety boundary</a>
+  <a href="#exports">Exports</a>
 </p>
 
-![WebScan’s authorization-gated workspace with the StudySphere-inspired editorial interface](assets/webscan-authorized-workspace.webp)
+![WebScan’s authorization-gated workspace, including the optional redacted owner-evidence intake](assets/webscan-authorized-workspace.webp)
 
-![WebScan’s real report interface with score, findings, local history, and JSON/Markdown/HTML export options](assets/webscan-report-overview.webp)
+![WebScan’s report interface with posture score, agent readout, local history, and export formats](assets/webscan-report-overview.webp)
 
 ## ✨ What is WebScan?
 
-WebScan helps an authorized website owner turn safe, observable security signals into a clear remediation plan. It reviews a verified public response, explains what was observed, prioritizes the fixes, and creates a **safe coding-assistant brief** for applying those fixes without weakening the product.
+WebScan coordinates **15 defensive agents** to help an authorized website owner turn observable security signals and carefully redacted owner evidence into a prioritized remediation plan. A review shows what was observed, how confident WebScan is, what remains outside coverage, how to verify a fix, and a safe coding-assistant brief for the next engineering step.
 
-> **No account. No sign-in. No password.** WebScan starts with a website URL, an explicit authorization acknowledgement, and a one-time domain-verification file. Your report history stays in the browser on the device you use.
+> **No account. No sign-in. No password.** WebScan begins with a website URL, an explicit authorization acknowledgement, and a one-time domain-verification file. Local review history stays in the browser on the device being used.
 
-| 🧭 You provide | 🔎 WebScan reviews | 🧰 You receive |
+WebScan does **not** promise to find every vulnerability. No public-response review or limited code excerpt can make that guarantee. Instead, every agent reports its evidence source and limits so the owner can decide where a deeper authorized review is needed.
+
+| 🧭 You provide | 🔎 The 15 agents review | 🧰 You receive |
 | --- | --- | --- |
-| A public website you own or are explicitly authorized to assess | Transport, response headers, visible cookie attributes, sampled HTML references, and public technology hints | A score, evidence-based findings, remediation guidance, verification criteria, and an AI coding prompt |
+| A public website you own or are explicitly authorized to assess | Verified public response signals and, optionally, selected redacted source/configuration material | Score, agent coverage, evidence-backed findings, remediation guidance, verification criteria, and an AI coding prompt |
 
 ## 🚀 Quick start
 
@@ -41,81 +44,101 @@ Open `http://127.0.0.1:5173`. The frontend runs on port `5173` and proxies the l
 | Step | What happens |
 | --- | --- |
 | **01 — Confirm** | Enter a complete HTTP/HTTPS origin and confirm that you own it or have written authorization. |
-| **02 — Verify** | Publish the one-time token at `/.well-known/webscan-verification.txt`. |
-| **03 — Review** | Run the bounded defensive review and inspect the score, coverage, limits, findings, and repair brief. |
+| **02 — Add evidence** | Optionally select redacted source, dependency, CI, or deployment files so the owner-evidence agents can review real context. |
+| **03 — Verify** | Publish the one-time token at `/.well-known/webscan-verification.txt`. |
+| **04 — Review** | Run the bounded defensive review and inspect the score, agent coverage, limits, findings, and repair brief. |
 
-## 🧩 Seven specialist lenses
+## 🤖 15-agent coverage
 
-WebScan separates what it observed from what needs additional owner-provided evidence. It does not pretend that a public response alone proves a complete security posture.
+The first five agents review a verified public response. The remaining agents become more useful when the owner selects redacted source or configuration evidence. Each agent is defensive only: it reports observed cues and remediation objectives, never exploit payloads or bypass instructions.
 
-| Lens | Current focus | Evidence required |
-| --- | --- | --- |
-| **Surface & transport** | HTTPS, redirects, HSTS, browser response controls | Verified public response |
-| **Identity & sessions** | Cookie attributes and session posture | Visible response plus owner evidence for full flows |
-| **Access control** | Roles, tenants, object boundaries | Owner-provided routes or source |
-| **Data protection** | Referrer policy, sensitive-data handling, secrets hygiene | Public signals plus owner evidence |
-| **Application exposure** | CSP, MIME controls, client delivery, technology hints | Safe rendered response |
-| **Dependencies & supply chain** | Packages, lockfiles, release controls | Owner-provided manifest and lockfile |
-| **Deployment posture** | Environment separation, headers, CI controls | Owner-provided deployment configuration |
+| # | Agent | Primary focus |
+| ---: | --- | --- |
+| 01 | **Transport agent** | HTTPS, redirects, HSTS, secure response delivery. |
+| 02 | **Browser isolation agent** | CSP, framing, MIME protections, browser permissions. |
+| 03 | **Session agent** | Visible cookie attributes, recovery and session boundaries. |
+| 04 | **Authentication agent** | Owner-provided authentication-flow evidence. |
+| 05 | **Authorization agent** | Roles, tenants, object ownership and server-side boundaries. |
+| 06 | **Input safety agent** | Validation, encoding, unsafe rendering and upload-handling cues. |
+| 07 | **Client exposure agent** | Client delivery, metadata, HTTP resources and public endpoint cues. |
+| 08 | **API & error agent** | Route structure, response behavior and error-handling cues. |
+| 09 | **Data privacy agent** | Referrer controls, data-minimization and lifecycle cues. |
+| 10 | **Configuration hygiene agent** | Redacted configuration and environment-separation cues. |
+| 11 | **Dependency agent** | Manifest, lockfile and package-hygiene cues. |
+| 12 | **Supply-chain agent** | Build, CI and release workflow evidence. |
+| 13 | **Deployment agent** | Runtime, headers and hosting-configuration evidence. |
+| 14 | **Logging & recovery agent** | Logging, recovery and auditability cues. |
+| 15 | **Storage & cryptography agent** | Storage, cryptography and data-lifecycle evidence. |
+
+Read [AGENT_COVERAGE.md](AGENT_COVERAGE.md) for the complete evidence map and boundaries for every agent.
+
+## 📎 Owner evidence
+
+Owner evidence is **optional**, but it makes the authentication, authorization, input, dependency, supply-chain, deployment, logging, and storage agents substantially more useful. WebScan accepts up to eight small text files for the current review only, such as selected `.ts`/`.tsx`/`.js` files, `package.json`, lockfiles, CI workflows, redacted deployment configuration, or a safe `settings.txt` template.
+
+| ✅ Appropriate evidence | ⛔ Never submit |
+| --- | --- |
+| Selected source files with the relevant control flow | Real `.env` files, credentials, tokens, private keys, connection strings, or personal data |
+| `package.json`, lockfile, CI workflow, deployment template | Production secrets or complete raw database/application backups |
+| Redacted configuration examples with placeholders | Any file you are not authorized to share |
+
+The API rejects real environment-file names and common live-secret patterns. Evidence is used for the current in-memory review only; the report keeps a **summary** of files and types reviewed, not their contents.
 
 ## 📤 Exports
 
-Every completed report can be exported without raw cookie values or credentials. The export controls appear directly beside the report tabs.
+Every completed report can be exported without raw cookie values, credentials, or submitted evidence content. The export controls appear directly beside the report tabs.
 
 | Format | Best for | Notes |
 | --- | --- | --- |
-| **JSON** | Automation, backup, structured ingestion | Includes the report, findings, limitations, and repair prompt. |
-| **Markdown** | GitHub issues, pull requests, project docs | Human-readable findings and a copyable remediation brief. |
-| **Print HTML** | Sharing or saving a PDF from the browser print dialog | Self-contained, print-ready report with the same bounded-scope notice. |
+| **JSON** | Automation, backup, structured ingestion | Includes findings, limits, agent coverage, and a safe evidence summary. |
+| **Markdown** | GitHub issues, pull requests, project docs | Human-readable 15-agent readout and a copyable remediation brief. |
+| **Print HTML** | Sharing or saving a PDF from the browser print dialog | Self-contained, print-ready report with scope and evidence-handling notices. |
 
 ## 🧪 Real controlled audit
 
-The following example is not a mock report. It is the output of a completed WebScan run against a **temporary website controlled solely for this validation**. The site intentionally omitted several browser protections, set an incomplete test cookie, and referenced an HTTP asset so that the defensive engine could produce evidence-backed results. It was verified with the normal `/.well-known/webscan-verification.txt` process before the assessment started.
+The files below are **real output**, not a mock report. WebScan assessed a temporary website controlled solely for validation. The temporary page intentionally omitted several browser protections, set an incomplete test cookie, referenced an HTTP asset, and was accompanied by four small redacted owner-evidence files. The normal `/.well-known/webscan-verification.txt` process completed before the assessment began.
 
 ### Result snapshot
 
 | Result | Value |
 | --- | --- |
-| **Posture score** | **37 / 100** |
+| **Posture score** | **25 / 100** |
 | **Grade** | **E** |
-| **Attention items** | **7** |
-| **Observed limitations** | No credentialed checks, exploitation, fuzzing, brute force, or denial-of-service testing |
+| **Attention items** | **8** |
+| **Agent coverage** | **15 / 15 agents completed** |
+| **Owner evidence** | **4 redacted files**, summarized but not retained in the report |
+| **Limits maintained** | No credentialed testing, exploitation, fuzzing, brute force, or denial-of-service testing |
 
-### What WebScan observed
+### What the agents observed
 
-| Priority | Finding | What the controlled site demonstrated |
-| --- | --- | --- |
-| Medium | HSTS policy | `Strict-Transport-Security` was absent. |
-| Medium | Content Security Policy | `Content-Security-Policy` was absent. |
-| Medium | Cookie hardening | A test cookie lacked the complete Secure, HttpOnly, and SameSite posture. Its value was deliberately **not** kept in the report. |
-| Medium | HTTP resource reference | The sampled HTML referenced an `http://` resource. |
-| Low | Referrer policy | `Referrer-Policy` was absent. |
-| Low | MIME sniffing protection | `X-Content-Type-Options` was absent. |
-| Low | Permissions policy | `Permissions-Policy` was absent. |
+| Agent area | Representative result from the controlled test |
+| --- | --- |
+| Transport and browser isolation | HSTS, CSP, MIME sniffing protection, and browser permissions controls were absent. |
+| Session and privacy | The test cookie did not include the complete Secure/HttpOnly/SameSite posture, and Referrer-Policy was absent. The cookie value was never retained. |
+| Client exposure | The page contained an HTTP resource reference. |
+| Owner-evidence agents | The submitted, deliberately small evidence set enabled all 15 agents to report their coverage and tailored verification criteria without exposing an evidence excerpt in the report. |
 
-### The resulting remediation prompt
+### Resulting remediation prompt
 
-The complete evidence and every finding are available in the export files below. This is the exact style of prompt WebScan generated from the controlled audit:
+The exact generated prompt and all evidence-backed findings are included in the downloadable artifacts. Its key instruction style was:
 
 ```text
 You are improving the security of the authorized web application.
 
 Scope and evidence:
 - This is a defensive remediation task based on a bounded WebScan review.
-- Coverage: verified public response; transport and response headers; visible cookie attributes; sampled HTML asset references; public technology hints.
-- Limitations: no credentialed testing, authentication bypass attempts, active exploitation, fuzzing, brute force, or denial-of-service testing.
+- Use the verified public-response evidence and the selected redacted owner evidence only.
+- Respect the declared limits: no credentialed testing, exploitation, fuzzing, brute force, or denial-of-service testing.
 
 Prioritized remediation objectives:
-1. Add a reviewed Strict-Transport-Security policy once all subdomains are ready for HTTPS.
-2. Implement a restrictive, tested Content-Security-Policy and progressively remove broad script allowances.
-3. Apply Secure, HttpOnly, and an appropriate SameSite setting to every sensitive state cookie.
-4. Replace HTTP resource references with HTTPS sources and add CSP reporting or enforcement where appropriate.
-5. Set reviewed Referrer-Policy, X-Content-Type-Options, and Permissions-Policy controls.
+1. Add and test browser transport and isolation controls such as HSTS, CSP, MIME sniffing protection, Referrer-Policy, and Permissions-Policy.
+2. Apply Secure, HttpOnly, and an appropriate SameSite setting to sensitive state cookies.
+3. Replace HTTP resource references with HTTPS sources and enforce the result with a reviewed CSP.
+4. Review the owner-evidence findings for authentication, authorization, input safety, API errors, configuration, dependencies, CI, deployment, logging, and storage.
 
 Implementation constraints:
 - Preserve existing product behavior and user flows.
 - Do not add tracking, weaken authentication, hardcode secrets, or expose private data in logs.
-- Prefer framework-native security controls and server-side enforcement.
 - Add or update automated tests for every changed security behavior.
 - Return the affected files, tests run, and remaining assumptions.
 - Do not include exploit payloads, attack automation, or instructions for bypassing controls.
@@ -129,9 +152,9 @@ WebScan is a **defensive, owner-authorized** review. It rejects local and privat
 
 | ✅ In scope | ⛔ Out of scope |
 | --- | --- |
-| A bounded public-surface review of a domain you control | Unverified third-party targets, intranets, local networks, or arbitrary ports |
-| Remediation guidance and safe development prompts | Exploitation, credential attacks, bypasses, fuzzing, stealth scanning, brute force, or denial-of-service testing |
-| Transparent coverage and limitations | Claims that a website has no vulnerabilities |
+| Bounded public-response review of a verified domain you control | Unverified third-party targets, intranets, local networks, or arbitrary ports |
+| Owner-selected, redacted evidence reviewed for the current assessment | Exploitation, credential attacks, bypasses, fuzzing, stealth scanning, brute force, or denial-of-service testing |
+| Transparent evidence, coverage, confidence, limitations, and remediation criteria | Claims that a website has no vulnerabilities or that every vulnerability was found |
 
 > A verification file confirms a minimal level of domain control. It is not a substitute for a formal scope agreement, a penetration test, or a complete application-security review.
 
@@ -139,7 +162,7 @@ WebScan is a **defensive, owner-authorized** review. It rejects local and privat
 
 WebScan uses a React + TypeScript frontend, an Express + TypeScript backend, and structured findings. Reports are user-initiated and bounded; there is no background crawler, continuous scanner, account system, or cloud dashboard.
 
-Read [ARCHITECTURE.md](ARCHITECTURE.md) for the full authorization model, coverage map, and reporting rules.
+Read [ARCHITECTURE.md](ARCHITECTURE.md) for the authorization model and [AGENT_COVERAGE.md](AGENT_COVERAGE.md) for the 15-agent evidence model.
 
 ## ✅ Quality checks
 

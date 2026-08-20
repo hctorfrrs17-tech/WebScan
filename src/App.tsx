@@ -1,17 +1,25 @@
 import { useMemo, useState } from "react";
-import type { AssessmentReport, Finding, Severity, VerificationChallenge } from "../shared/types";
+import type { AssessmentReport, Finding, OwnerEvidenceFile, Severity, VerificationChallenge } from "../shared/types";
 import { createReportExport, type ExportFormat } from "./reportExport";
 
 type ReviewHistoryItem = Pick<AssessmentReport, "id" | "target" | "hostname" | "score" | "grade" | "verifiedAt">;
 
 const agentCatalog = [
-  ["01", "Surface & transport", "HTTPS, redirects, headers, framing"],
-  ["02", "Identity & sessions", "Cookies, recovery, session lifecycle"],
-  ["03", "Access control", "Roles, tenants, object boundaries"],
-  ["04", "Data protection", "Secrets, privacy, retention, leakage"],
-  ["05", "Application exposure", "Inputs, errors, client delivery"],
-  ["06", "Dependencies & supply chain", "Packages, lockfiles, release hygiene"],
-  ["07", "Deployment posture", "Environment, CI, configuration"],
+  ["01", "Transport agent", "HTTPS, redirects, HSTS, response delivery"],
+  ["02", "Browser isolation agent", "CSP, framing, MIME, browser permissions"],
+  ["03", "Session agent", "Cookies, recovery, session boundaries"],
+  ["04", "Authentication agent", "Owner-provided authentication evidence"],
+  ["05", "Authorization agent", "Roles, tenants, object boundaries"],
+  ["06", "Input safety agent", "Validation, encoding, unsafe-rendering cues"],
+  ["07", "Client exposure agent", "Client delivery, metadata, public endpoints"],
+  ["08", "API & error agent", "Routes, errors, response-handling cues"],
+  ["09", "Data privacy agent", "Referrer, data-minimization, lifecycle cues"],
+  ["10", "Configuration hygiene agent", "Redacted config and environment separation"],
+  ["11", "Dependency agent", "Manifest, lockfile, package hygiene"],
+  ["12", "Supply-chain agent", "Build, CI, and release evidence"],
+  ["13", "Deployment agent", "Runtime and hosting configuration"],
+  ["14", "Logging & recovery agent", "Logging, recovery, and auditability cues"],
+  ["15", "Storage & cryptography agent", "Storage, crypto, and lifecycle evidence"],
 ] as const;
 
 const demoReport: AssessmentReport = {
@@ -21,15 +29,16 @@ const demoReport: AssessmentReport = {
   verifiedAt: "2026-08-20T09:30:00.000Z",
   score: 68,
   grade: "C",
-  coverage: ["Verified public response", "Transport and response headers", "Visible cookie attributes", "Sampled HTML asset references", "Public technology hints"],
-  limitations: ["No credentialed testing or authentication bypass attempts", "No active exploitation, fuzzing, brute force, or denial-of-service testing", "Access control, dependencies, and deployment require owner-provided source or configuration evidence"],
-  specialists: agentCatalog.map(([id, label, focus], index) => ({ id, label, focus, state: index < 5 ? "complete" : "limited", findingCount: [1, 1, 0, 1, 1, 0, 0][index] })),
+  coverage: ["Verified public response", "Transport and response headers", "Visible cookie attributes", "Sampled HTML asset references", "Public technology hints", "3 redacted owner-evidence files, processed for this review only"],
+  limitations: ["No credentialed testing or authentication bypass attempts", "No active exploitation, fuzzing, brute force, or denial-of-service testing", "Source review is limited to the selected redacted excerpts supplied by the owner"],
+  specialists: agentCatalog.map(([id, label, focus], index) => ({ id, label, focus, state: index < 9 ? "complete" : "limited", findingCount: [1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0][index] })),
+  evidenceSummary: { ownerEvidenceProvided: true, sourceFilesReviewed: 3, reviewedFileTypes: [".json", ".ts", ".yml"], handling: "current-review-only" },
   findings: [
-    { id: "d1", specialist: "Surface & transport", title: "Content Security Policy", severity: "medium", status: "attention", confidence: "high", evidence: "Content-Security-Policy was not present in the verified response.", impact: "The browser has no additional policy layer to contain some script injection impacts.", remediation: "Implement a restrictive, tested Content-Security-Policy and progressively remove broad script allowances.", verification: "Confirm a representative protected route returns an appropriate policy.", reference: "OWASP ASVS v5.0.0 — Encoding and Sanitization" },
-    { id: "d2", specialist: "Identity & sessions", title: "Observed cookie hardening is incomplete", severity: "medium", status: "attention", confidence: "medium", evidence: "A state cookie was observed without every recommended browser attribute.", impact: "Sensitive state may have weaker protection in the browser.", remediation: "Review session and sensitive-state cookies; apply Secure, HttpOnly, and an appropriate SameSite setting.", verification: "Inspect cookies emitted by sign-in and recovery flows without retaining values.", reference: "OWASP ASVS v5.0.0 — Authentication and Session Management" },
-    { id: "d3", specialist: "Application exposure", title: "Technology disclosure", severity: "low", status: "observe", confidence: "high", evidence: "A response technology banner was observed.", impact: "Technology details reduce discovery effort but are not a vulnerability by themselves.", remediation: "Remove unnecessary technology banners while preserving patching and inventory processes.", verification: "Inspect representative production responses for non-essential technology headers.", reference: "OWASP WSTG — Information Gathering" },
-    { id: "d4", specialist: "Data protection", title: "Referrer policy", severity: "low", status: "attention", confidence: "high", evidence: "Referrer-Policy was not present in the verified response.", impact: "Sensitive paths or query parameters could be shared more broadly through browser referrer behavior.", remediation: "Set a reviewed Referrer-Policy subject to product requirements.", verification: "Confirm the policy on protected routes and external navigation paths.", reference: "OWASP ASVS v5.0.0 — Data Protection" },
-    { id: "d5", specialist: "Surface & transport", title: "HTTPS transport observed", severity: "info", status: "pass", confidence: "high", evidence: "The verified target responded over HTTPS.", impact: "Encrypted transport was observed for the reviewed response.", remediation: "Keep HTTPS enforced and test redirects from HTTP.", verification: "Confirm all sensitive routes reject plaintext transport.", reference: "OWASP ASVS v5.0.0 — Communications Security" }
+    { id: "d1", specialist: "Browser isolation agent", title: "Content Security Policy", severity: "medium", status: "attention", confidence: "high", evidence: "Content-Security-Policy was not present in the verified response.", impact: "The browser has no additional policy layer to contain some script injection impacts.", remediation: "Implement a restrictive, tested Content-Security-Policy and progressively remove broad script allowances.", verification: "Confirm a representative protected route returns an appropriate policy.", reference: "OWASP ASVS v5.0.0 — Encoding and Sanitization" },
+    { id: "d2", specialist: "Session agent", title: "Observed cookie hardening is incomplete", severity: "medium", status: "attention", confidence: "medium", evidence: "A state cookie was observed without every recommended browser attribute.", impact: "Sensitive state may have weaker protection in the browser.", remediation: "Review session and sensitive-state cookies; apply Secure, HttpOnly, and an appropriate SameSite setting.", verification: "Inspect cookies emitted by sign-in and recovery flows without retaining values.", reference: "OWASP ASVS v5.0.0 — Authentication and Session Management" },
+    { id: "d3", specialist: "Client exposure agent", title: "Technology disclosure", severity: "low", status: "observe", confidence: "high", evidence: "A response technology banner was observed.", impact: "Technology details reduce discovery effort but are not a vulnerability by themselves.", remediation: "Remove unnecessary technology banners while preserving patching and inventory processes.", verification: "Inspect representative production responses for non-essential technology headers.", reference: "OWASP WSTG — Information Gathering" },
+    { id: "d4", specialist: "Data privacy agent", title: "Referrer policy", severity: "low", status: "attention", confidence: "high", evidence: "Referrer-Policy was not present in the verified response.", impact: "Sensitive paths or query parameters could be shared more broadly through browser referrer behavior.", remediation: "Set a reviewed Referrer-Policy subject to product requirements.", verification: "Confirm the policy on protected routes and external navigation paths.", reference: "OWASP ASVS v5.0.0 — Data Protection" },
+    { id: "d5", specialist: "Transport agent", title: "HTTPS transport observed", severity: "info", status: "pass", confidence: "high", evidence: "The verified target responded over HTTPS.", impact: "Encrypted transport was observed.", remediation: "Keep HTTPS enforced and test redirects from HTTP.", verification: "Confirm all sensitive routes reject plaintext transport.", reference: "OWASP ASVS v5.0.0 — Communications Security" }
   ],
   generatedPrompt: "You are improving the security of an authorized web application.\n\nPrioritized remediation objectives:\n1. Add and test a restrictive Content-Security-Policy.\n2. Review state cookies and apply Secure, HttpOnly, and appropriate SameSite attributes.\n3. Add a reviewed Referrer-Policy and remove unnecessary technology banners.\n\nImplementation constraints:\n- Preserve existing product behavior and user flows.\n- Do not hardcode secrets or expose private data in logs.\n- Prefer server-side enforcement and framework-native controls.\n- Add automated tests for every changed security behavior.\n- Return the affected files, tests run, and remaining assumptions.\n- Do not include exploit payloads, bypass instructions, or attack automation."
 };
@@ -64,6 +73,7 @@ function SeverityChip({ severity }: { severity: Severity }) {
 export default function App() {
   const [target, setTarget] = useState("");
   const [authorized, setAuthorized] = useState(false);
+  const [ownerEvidence, setOwnerEvidence] = useState<OwnerEvidenceFile[]>([]);
   const [challenge, setChallenge] = useState<VerificationChallenge | null>(null);
   const [report, setReport] = useState<AssessmentReport | null>(null);
   const [busy, setBusy] = useState<"challenge" | "verify" | "analyze" | null>(null);
@@ -78,12 +88,22 @@ export default function App() {
   const sortedFindings = useMemo(() => (report?.findings ?? []).slice().sort((a, b) => severityWeight(b.severity) - severityWeight(a.severity)), [report]);
   const attentionCount = report?.findings.filter((item) => item.status === "attention").length ?? 0;
 
+  async function collectOwnerEvidence(files: FileList | null) {
+    setError(null);
+    const selected = Array.from(files ?? []);
+    if (selected.length > 8) { setError("Choose at most 8 redacted text files for this review."); return; }
+    try {
+      const prepared = await Promise.all(selected.map(async (file) => ({ name: file.name, content: await file.text() })));
+      setOwnerEvidence(prepared);
+    } catch { setError("WebScan could not read the selected evidence files."); }
+  }
+
   async function requestChallenge() {
     setError(null); setReport(null); setBusy("challenge");
     try {
       const normalizedTarget = target.trim().startsWith("http") ? target.trim() : `https://${target.trim()}`;
       setTarget(normalizedTarget);
-      const response = await fetch("/api/challenges", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ target: normalizedTarget, authorizationConfirmed: authorized }) });
+      const response = await fetch("/api/challenges", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ target: normalizedTarget, authorizationConfirmed: authorized, ownerEvidence }) });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error);
       setChallenge(payload);
@@ -168,8 +188,8 @@ export default function App() {
         <div className="intro-copy">
           <div className="section-tag"><span className="pulse" /> Authorization-gated security review</div>
           <h1>See what your web app is <em>showing</em> to the world.</h1>
-          <p>WebScan coordinates specialist reviews across your public surface, identity design, data handling, dependencies, and deployment posture—then turns evidence into a clear remediation plan.</p>
-          <div className="intro-stats"><div><strong>07</strong><span>specialist lenses</span></div><div><strong>0</strong><span>exploit attempts</span></div><div><strong>1</strong><span>owner consent gate</span></div></div>
+          <p>WebScan coordinates 15 defensive agents across your public surface, identity design, data handling, dependencies, and deployment posture—then turns verified and owner-supplied evidence into a clear remediation plan.</p>
+          <div className="intro-stats"><div><strong>15</strong><span>defensive agents</span></div><div><strong>0</strong><span>exploit attempts</span></div><div><strong>1</strong><span>owner consent gate</span></div></div>
         </div>
         <div className="scope-card">
           <div className="scope-header"><span>ASSESSMENT BOUNDARY</span><Icon name="shield" /></div>
@@ -185,6 +205,7 @@ export default function App() {
           <label htmlFor="target">Website origin</label>
           <div className="target-input"><span>https://</span><input id="target" value={target.replace(/^https:\/\//, "")} onChange={(event) => setTarget(event.target.value.replace(/^https:\/\//, ""))} placeholder="app.example.com" /><span className="cursor-mark">↗</span></div>
           <label className="consent"><input type="checkbox" checked={authorized} onChange={(event) => setAuthorized(event.target.checked)} /><span>I own this target or have written authorization to review it.</span></label>
+          <div className="evidence-intake"><label htmlFor="owner-evidence">Owner evidence <span>optional / redacted</span></label><input id="owner-evidence" type="file" multiple accept=".ts,.tsx,.js,.jsx,.json,.yml,.yaml,.toml,.md,.txt,.env.example" onChange={(event) => void collectOwnerEvidence(event.target.files)} /><p>Optional files let the authentication, authorization, dependency, deployment, logging, and storage agents review real context. Do not upload `.env` files, private keys, passwords, tokens, or personal data.</p>{ownerEvidence.length > 0 && <div className="evidence-files">{ownerEvidence.map((file) => <span key={file.name}>{file.name}</span>)}</div>}</div>
           <button className="primary-button" disabled={!target || !authorized || busy !== null} onClick={requestChallenge}>
             {busy === "challenge" ? "Preparing boundary…" : "Create verification challenge"}<Icon name="arrow" />
           </button>
@@ -200,7 +221,7 @@ export default function App() {
       </section>}
 
       {!report && <section className="agent-section">
-        <div className="section-heading"><div><span className="eyebrow">MULTI-LENS COVERAGE</span><h2>Seven agents. One accountable report.</h2></div><p>Every lens describes evidence, confidence, limits, and verification criteria. Source and deployment checks only activate with owner-provided material.</p></div>
+        <div className="section-heading"><div><span className="eyebrow">15-AGENT COVERAGE</span><h2>Fifteen agents. One accountable report.</h2></div><p>Every agent declares its evidence, confidence, limits, and verification criteria. Owner-evidence agents process only the redacted files selected for the current review.</p></div>
         <div className="agent-grid">{agentCatalog.map(([index, label, focus]) => <article key={index} className="agent-card"><span>{index}</span><h3>{label}</h3><p>{focus}</p><i /></article>)}</div>
       </section>}
 
@@ -209,8 +230,8 @@ export default function App() {
         <div className="report-nav"><div><button className={view === "overview" ? "selected" : ""} onClick={() => setView("overview")}>Overview</button><button className={view === "findings" ? "selected" : ""} onClick={() => setView("findings")}>Findings <span>{attentionCount}</span></button><button className={view === "prompt" ? "selected" : ""} onClick={() => setView("prompt")}>Repair prompt</button></div><div className="report-actions"><span>{history.length} local {history.length === 1 ? "review" : "reviews"}</span><div className="export-list" aria-label="Export evidence"><button onClick={() => exportReport("json")}>JSON</button><button onClick={() => exportReport("markdown")}>Markdown</button><button onClick={() => exportReport("html")}>Print HTML</button></div></div></div>
 
         {view === "overview" && <>
-          <div className="metric-row"><div><span>POSTURE SCORE</span><strong>{report.score}<small>/100</small></strong><p>{report.grade === "A" || report.grade === "B" ? "Lower observed risk in this bounded review." : "Prioritized improvements are ready for review."}</p></div><div><span>ATTENTION ITEMS</span><strong>{attentionCount}</strong><p>Sorted by observed impact and confidence.</p></div><div><span>COVERAGE LIMIT</span><strong>{report.specialists.filter((item) => item.state === "complete").length}<small>/07</small></strong><p>Some lenses require source or configuration evidence.</p></div></div>
-          <div className="report-columns"><div className="specialist-list"><div className="list-header"><h2>Specialist readout</h2><span>BOUNDARY: VERIFIED</span></div>{report.specialists.map((agent) => <div className="specialist-row" key={agent.id}><span className={`agent-state agent-state--${agent.state}`} /><div><b>{agent.label}</b><p>{agent.focus}</p></div><span className="finding-number">{agent.findingCount ? `${agent.findingCount} item${agent.findingCount > 1 ? "s" : ""}` : "clear / limited"}</span></div>)}</div>
+          <div className="metric-row"><div><span>POSTURE SCORE</span><strong>{report.score}<small>/100</small></strong><p>{report.grade === "A" || report.grade === "B" ? "Lower observed risk in this bounded review." : "Prioritized improvements are ready for review."}</p></div><div><span>ATTENTION ITEMS</span><strong>{attentionCount}</strong><p>Sorted by observed impact and confidence.</p></div><div><span>AGENT COVERAGE</span><strong>{report.specialists.filter((item) => item.state === "complete").length}<small>/15</small></strong><p>{report.evidenceSummary.ownerEvidenceProvided ? `${report.evidenceSummary.sourceFilesReviewed} owner files reviewed for this report only.` : "Some agents need redacted owner evidence."}</p></div></div>
+          <div className="report-columns"><div className="specialist-list"><div className="list-header"><h2>15-agent readout</h2><span>BOUNDARY: VERIFIED</span></div>{report.specialists.map((agent) => <div className="specialist-row" key={agent.id}><span className={`agent-state agent-state--${agent.state}`} /><div><b>{agent.label}</b><p>{agent.focus}</p></div><span className="finding-number">{agent.findingCount ? `${agent.findingCount} item${agent.findingCount > 1 ? "s" : ""}` : "clear / limited"}</span></div>)}</div>
           <div className="priority-card"><span className="eyebrow">FIRST MOVE</span><h2>{sortedFindings.find((item) => item.status === "attention")?.title ?? "Review complete"}</h2><p>{sortedFindings.find((item) => item.status === "attention")?.remediation ?? "No observed attention items were found in the available evidence."}</p><button className="secondary-button" onClick={() => setView("findings")}>Review finding <Icon name="arrow" /></button></div></div>
         </>}
 
