@@ -122,8 +122,6 @@ The PDF never includes raw cookie values, credentials, submitted evidence conten
 | **Owner evidence** | **8 redacted files**, summarized but not retained in the report |
 | **Limits maintained** | No credentialed testing, exploitation, fuzzing, brute force, or denial-of-service testing |
 
-### What the agents observed
-
 
 ### Detailed PDF result
 
