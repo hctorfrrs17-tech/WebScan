@@ -21,3 +21,7 @@
 - [x] Update the assessment UI, exports, tests, controlled-audit example, and README to use the term “agents” consistently.
 - [x] Add an owner-evidence intake for redacted source, dependency, and deployment material without accepting secrets.
 - [x] Make the WebScan GitHub repository public after the 15-agent update is validated.
+- [x] Require concrete evidence before an owner-evidence agent creates an actionable security finding.
+- [x] Make remediation prompts enumerate specific fixes only for evidence-backed attention findings.
+- [x] Correct the WebScan installation instructions so they match the supported local workflow.
+- [x] Create and deliver a WebScan social preview image aligned with the retro-technical editorial interface.

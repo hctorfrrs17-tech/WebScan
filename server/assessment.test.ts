@@ -52,5 +52,8 @@ describe("WebScan defensive assessment boundaries", () => {
     expect(prompt).toContain("Do not include exploit payloads");
     expect(prompt).toContain("Add or update automated tests");
     expect(prompt).toContain("Preserve existing product behavior");
+    expect(prompt).toContain("Observed signal: Missing");
+    expect(prompt).toContain("Required change: Add a restrictive policy");
+    expect(prompt).toContain("Acceptance check: Check response");
   });
 });

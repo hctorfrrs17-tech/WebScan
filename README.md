@@ -32,12 +32,20 @@ WebScan does **not** promise to find every vulnerability. No public-response rev
 
 ## 🚀 Quick start
 
+WebScan is a local web application. You need **Git**, **Node.js 22 or later**, and **pnpm**. No API key, database, Docker setup, account, or production secret is required to run the project locally.
+
+On macOS or Linux, run:
+
 ```bash
+git clone https://github.com/hctorfrrs17-tech/WebScan.git
+cd WebScan
 pnpm install
 pnpm dev
 ```
 
-Open `http://127.0.0.1:5173`. The frontend runs on port `5173` and proxies the local API to port `8787`.
+Then open [http://127.0.0.1:5173](http://127.0.0.1:5173). The `pnpm dev` command starts the frontend on port `5173` and its local API on port `8787` together. To stop both, return to the terminal and press `Ctrl+C`.
+
+> **Windows:** Run the same commands inside [WSL](https://learn.microsoft.com/windows/wsl/install). The project’s development command uses standard shell environment-variable syntax, so WSL is the supported Windows path.
 
 ### The review flow
 
@@ -70,7 +78,7 @@ The first five agents review a verified public response. The remaining agents be
 | 14 | **Logging & recovery agent** | Logging, recovery and auditability cues. |
 | 15 | **Storage & cryptography agent** | Storage, cryptography and data-lifecycle evidence. |
 
-Read [AGENT_COVERAGE.md](AGENT_COVERAGE.md) for the complete evidence map and boundaries for every agent.
+Read [AGENT_COVERAGE.md](AGENT_COVERAGE.md) for the complete evidence map and boundaries for every agent. [AGENT_EVIDENCE_POLICY.md](AGENT_EVIDENCE_POLICY.md) defines the concrete signal threshold required before an owner-evidence agent creates an actionable finding.
 
 ## 📎 Owner evidence
 
@@ -96,17 +104,17 @@ Every completed report can be exported without raw cookie values, credentials, o
 
 ## 🧪 Real controlled audit
 
-The files below are **real output**, not a mock report. WebScan assessed a temporary website controlled solely for validation. The temporary page intentionally omitted several browser protections, set an incomplete test cookie, referenced an HTTP asset, and was accompanied by four small redacted owner-evidence files. The normal `/.well-known/webscan-verification.txt` process completed before the assessment began.
+The files below are **real output**, not a mock report. WebScan assessed a temporary website controlled solely for validation. The temporary page intentionally omitted several browser protections, set an incomplete test cookie, and referenced an HTTP asset. It was accompanied by five small redacted owner-evidence files containing deliberate, non-production signals such as a literal JWT signing value, client-controlled role input, unsafe HTML rendering, a wildcard CORS policy, and a privileged deployment setting. The normal `/.well-known/webscan-verification.txt` process completed before the assessment began.
 
 ### Result snapshot
 
 | Result | Value |
 | --- | --- |
-| **Posture score** | **25 / 100** |
+| **Posture score** | **20 / 100** |
 | **Grade** | **E** |
-| **Attention items** | **8** |
+| **Attention items** | **17 evidence-backed findings** |
 | **Agent coverage** | **15 / 15 agents completed** |
-| **Owner evidence** | **4 redacted files**, summarized but not retained in the report |
+| **Owner evidence** | **5 redacted files**, summarized but not retained in the report |
 | **Limits maintained** | No credentialed testing, exploitation, fuzzing, brute force, or denial-of-service testing |
 
 ### What the agents observed
@@ -116,11 +124,11 @@ The files below are **real output**, not a mock report. WebScan assessed a tempo
 | Transport and browser isolation | HSTS, CSP, MIME sniffing protection, and browser permissions controls were absent. |
 | Session and privacy | The test cookie did not include the complete Secure/HttpOnly/SameSite posture, and Referrer-Policy was absent. The cookie value was never retained. |
 | Client exposure | The page contained an HTTP resource reference. |
-| Owner-evidence agents | The submitted, deliberately small evidence set enabled all 15 agents to report their coverage and tailored verification criteria without exposing an evidence excerpt in the report. |
+| Owner-evidence agents | The agents identified specific simulated signals and produced targeted corrections: move a literal JWT signing value to server-only configuration, reject client-supplied privilege values, remove or sanitize unsafe HTML rendering, replace wildcard CORS with an allowlist, pin dependencies, and run the container without privileged/root settings. No evidence excerpt was retained. |
 
 ### Resulting remediation prompt
 
-The exact generated prompt and all evidence-backed findings are included in the downloadable artifacts. Its key instruction style was:
+The exact generated prompt and all evidence-backed findings are included in the downloadable artifacts. Each objective contains the observed signal, the required change, and its acceptance check; it does **not** ask a coding assistant to generically “review login”, “review storage”, or “review configuration”. Its key instruction style was:
 
 ```text
 You are improving the security of the authorized web application.
@@ -131,10 +139,18 @@ Scope and evidence:
 - Respect the declared limits: no credentialed testing, exploitation, fuzzing, brute force, or denial-of-service testing.
 
 Prioritized remediation objectives:
-1. Add and test browser transport and isolation controls such as HSTS, CSP, MIME sniffing protection, Referrer-Policy, and Permissions-Policy.
-2. Apply Secure, HttpOnly, and an appropriate SameSite setting to sensitive state cookies.
-3. Replace HTTP resource references with HTTPS sources and enforce the result with a reviewed CSP.
-4. Review the owner-evidence findings for authentication, authorization, input safety, API errors, configuration, dependencies, CI, deployment, logging, and storage.
+1. JWT signing value is embedded in source [Authentication agent; high]
+   - Observed signal: Redacted owner evidence contains a JWT signing call with a literal value.
+   - Required change: Read the signing value from a server-only secret at startup, reject startup when it is missing, and rotate the existing value before release.
+   - Acceptance check: Add a startup test that fails without the secret and an integration test that accepts tokens signed with the configured replacement value only.
+2. Client-supplied privilege value accepted [Authorization agent; high]
+   - Observed signal: Redacted owner evidence assigns a role or privilege value directly from a request body.
+   - Required change: Ignore client-supplied privilege fields and enforce role, tenant, and ownership boundaries server-side.
+   - Acceptance check: Submit elevated role fields from an unprivileged client and confirm the protected action is denied.
+3. Unsafe dynamic rendering or execution API used [Input safety agent; high]
+   - Observed signal: Redacted owner evidence uses a dynamic execution or HTML-rendering API.
+   - Required change: Remove the unsafe API or sanitize untrusted HTML with scripts, event attributes, and dangerous URL schemes disallowed.
+   - Acceptance check: Test script tags, event attributes, and `javascript:` URLs and confirm none become active content.
 
 Implementation constraints:
 - Preserve existing product behavior and user flows.
