@@ -121,14 +121,6 @@ The files below are **real output**, not a mock report. WebScan assessed a tempo
 | **Owner evidence** | **5 redacted files**, summarized but not retained in the report |
 | **Limits maintained** | No credentialed testing, exploitation, fuzzing, brute force, or denial-of-service testing |
 
-### What the agents observed
-
-| Agent area | Representative result from the controlled test |
-| --- | --- |
-| Transport and browser isolation | HSTS, CSP, MIME sniffing protection, and browser permissions controls were absent. |
-| Session and privacy | The test cookie did not include the complete Secure/HttpOnly/SameSite posture, and Referrer-Policy was absent. The cookie value was never retained. |
-| Client exposure | The page contained an HTTP resource reference. |
-| Owner-evidence agents | The agents identified specific simulated signals and produced targeted corrections: move a literal JWT signing value to server-only configuration, reject client-supplied privilege values, remove or sanitize unsafe HTML rendering, replace wildcard CORS with an allowlist, pin dependencies, and run the container without privileged/root settings. No evidence excerpt was retained. |
 
 ### Detailed PDF result
 
