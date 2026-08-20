@@ -29,7 +29,6 @@ WebScan coordinates **15 defensive agents** to help an authorized website owner 
 | --- | --- | --- |
 | A public website you own or are explicitly authorized to assess | Verified public response signals and, optionally, selected redacted source/configuration material | Score, agent coverage, evidence-backed findings, remediation guidance, verification criteria, and an AI coding prompt |
 
-> TIP: The more information, files, and code you provide, the better the security analysis will be—and consequently, the security of your website or web app can be further improved.
 
 ## 🚀 Quick start
 
@@ -56,6 +55,9 @@ Then open [http://127.0.0.1:5173](http://127.0.0.1:5173). The `pnpm dev` command
 | **02 — Add evidence** | Optionally select redacted source, dependency, CI, or deployment files so the owner-evidence agents can review real context. |
 | **03 — Verify** | Publish the one-time token at `/.well-known/webscan-verification.txt`. |
 | **04 — Review** | Run the bounded defensive review and inspect the score, agent coverage, limits, findings, and repair brief. |
+
+> TIP: The more information, files, and code you provide, the better the security analysis will be—and consequently, the security of your website or web app can be further improved.
+
 
 ## 🤖 15-agent coverage
 
