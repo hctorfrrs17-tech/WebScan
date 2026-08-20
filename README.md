@@ -106,7 +106,7 @@ The PDF never includes raw cookie values, credentials, submitted evidence conten
 
 ## 🧪 Real controlled audit
 
-> This test was made with a simple website made with [Manus AI](manus.im)
+> This test was made with a simple website made with [Manus AI](https://manus.im/app)
 
 The files below are **real output**, not a mock report. WebScan assessed a temporary website controlled solely for validation. The temporary page intentionally omitted several browser protections, set an incomplete test cookie, and referenced an HTTP asset. It was accompanied by five small redacted owner-evidence files containing deliberate, non-production signals such as a literal JWT signing value, client-controlled role input, unsafe HTML rendering, a wildcard CORS policy, and a privileged deployment setting. The normal `/.well-known/webscan-verification.txt` process completed before the assessment began.
 
