@@ -34,4 +34,4 @@
 - [x] Regenerate the controlled PDF example and documentation after expanding agent coverage.
 - [ ] Redesign the workspace and report with a cleaner terminal palette, fewer visual effects, and a revised page structure.
 - [ ] Remove the legacy hero label and validate refreshed desktop and mobile interface captures.
-- [ ] Repair the public controlled-audit PDF link or artifact and verify it opens from GitHub.
+- [x] Repair the public controlled-audit PDF link or artifact and verify it opens from GitHub.
