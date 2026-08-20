@@ -11,3 +11,4 @@
 - [x] Add automated tests for authorization, target validation, finding prioritization, and prompt safety.
 - [x] Write an English README, contribution guidance, and security policy.
 - [x] Create and publish the GitHub repository for WebScan.
+- [x] Restyle WebScan with StudySphere AI’s retro-technical editorial design system while preserving the defensive review flows.
