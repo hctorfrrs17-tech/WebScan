@@ -48,6 +48,10 @@ export async function assertPublicHostname(target: URL) {
   }
 }
 
+export function isReadableResponseType(type: string) {
+  return type.includes("text/html") || type.startsWith("text/plain");
+}
+
 export async function fetchSafely(target: URL): Promise<SafeResponse> {
   await assertPublicHostname(target);
   const response = await fetch(target, {
@@ -56,7 +60,8 @@ export async function fetchSafely(target: URL): Promise<SafeResponse> {
     headers: { "User-Agent": "WebScan-Defensive-Review/0.1 (+authorized-owner-check)" }
   });
   const type = response.headers.get("content-type") ?? "";
-  const html = type.includes("text/html") ? (await response.text()).slice(0, MAX_RESPONSE_BYTES) : "";
+  const readableText = isReadableResponseType(type);
+  const html = readableText ? (await response.text()).slice(0, MAX_RESPONSE_BYTES) : "";
   return { url: target.toString(), status: response.status, headers: response.headers, html };
 }
 

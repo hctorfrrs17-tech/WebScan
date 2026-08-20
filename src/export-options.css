@@ -1,0 +1,5 @@
+.report-actions { flex-wrap: wrap; justify-content: flex-end; }
+.export-list { display: flex; gap: 5px; }
+.export-list button { border: 1px solid rgba(36, 35, 31, .52); border-bottom: 1px solid rgba(36, 35, 31, .52); background: #fbf9f2; color: #1f628f; padding: 6px 8px; font: 10px "DM Mono", ui-monospace, monospace; }
+.export-list button:hover { background: #dceefa; color: #24231f; }
+@media (max-width: 640px) { .report-actions { justify-content: flex-start; } }

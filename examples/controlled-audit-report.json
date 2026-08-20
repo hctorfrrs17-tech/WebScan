@@ -1,0 +1,191 @@
+{
+  "id": "f24eb59e-3cff-4cd0-ba7d-02d23f86d46b",
+  "target": "https://3000-iqxvav6b63ryvbciag44g-50ce8d6f.us2.manus.computer/",
+  "hostname": "3000-iqxvav6b63ryvbciag44g-50ce8d6f.us2.manus.computer",
+  "verifiedAt": "2026-08-20T10:24:59.445Z",
+  "score": 37,
+  "grade": "E",
+  "coverage": [
+    "Verified public response",
+    "Transport and response headers",
+    "Visible cookie attributes",
+    "Sampled HTML asset references",
+    "Public technology hints"
+  ],
+  "limitations": [
+    "No credentialed testing or authentication bypass attempts",
+    "No active exploitation, fuzzing, brute force, or denial-of-service testing",
+    "Access control, dependencies, and deployment require owner-provided source or configuration evidence"
+  ],
+  "specialists": [
+    {
+      "id": "surface",
+      "label": "Surface & transport",
+      "focus": "HTTPS, redirects and browser response controls",
+      "state": "complete",
+      "findingCount": 1
+    },
+    {
+      "id": "identity",
+      "label": "Identity & sessions",
+      "focus": "Cookie and session posture observed on safe responses",
+      "state": "complete",
+      "findingCount": 1
+    },
+    {
+      "id": "access",
+      "label": "Access control",
+      "focus": "Requires source or owner-provided route evidence",
+      "state": "limited",
+      "findingCount": 0
+    },
+    {
+      "id": "data",
+      "label": "Data protection",
+      "focus": "Privacy and browser data-exposure controls",
+      "state": "complete",
+      "findingCount": 2
+    },
+    {
+      "id": "exposure",
+      "label": "Application exposure",
+      "focus": "Client delivery and public technology exposure",
+      "state": "complete",
+      "findingCount": 3
+    },
+    {
+      "id": "dependencies",
+      "label": "Dependencies & supply chain",
+      "focus": "Requires a manifest or lockfile from the owner",
+      "state": "limited",
+      "findingCount": 0
+    },
+    {
+      "id": "deployment",
+      "label": "Deployment posture",
+      "focus": "Requires deployment configuration from the owner",
+      "state": "limited",
+      "findingCount": 0
+    }
+  ],
+  "findings": [
+    {
+      "id": "194e81bc-6f6c-4c30-a70a-74373934c7c2",
+      "specialist": "Surface & transport",
+      "title": "HTTPS transport observed",
+      "severity": "info",
+      "status": "pass",
+      "confidence": "high",
+      "evidence": "Verified target responded over HTTPS.",
+      "impact": "Encrypted transport was observed for this response.",
+      "remediation": "Keep HTTPS enforced and test redirects from HTTP.",
+      "verification": "Confirm that HTTP requests redirect to the HTTPS origin and that no sensitive route accepts plaintext transport.",
+      "reference": "OWASP ASVS v5.0.0 — Communications Security"
+    },
+    {
+      "id": "26af0425-b526-4926-b890-4035d7445b4f",
+      "specialist": "Surface & transport",
+      "title": "HSTS policy",
+      "severity": "medium",
+      "status": "attention",
+      "confidence": "high",
+      "evidence": "strict-transport-security was not present in the verified response.",
+      "impact": "Without HSTS, returning visitors may be more exposed to protocol-downgrade risks.",
+      "remediation": "Set a reviewed Strict-Transport-Security policy once all subdomains are ready for HTTPS.",
+      "verification": "Request a representative protected route and confirm the strict-transport-security response header is present with an appropriate policy.",
+      "reference": "OWASP ASVS v5.0.0 — Communications Security"
+    },
+    {
+      "id": "3a645409-b53d-4e7d-b5b0-f85cc2a35520",
+      "specialist": "Application exposure",
+      "title": "Content Security Policy",
+      "severity": "medium",
+      "status": "attention",
+      "confidence": "high",
+      "evidence": "content-security-policy was not present in the verified response.",
+      "impact": "A missing CSP removes an important browser-side containment layer against script injection impacts.",
+      "remediation": "Implement a restrictive, tested Content-Security-Policy and progressively remove broad script allowances.",
+      "verification": "Request a representative protected route and confirm the content-security-policy response header is present with an appropriate policy.",
+      "reference": "OWASP ASVS v5.0.0 — Encoding and Sanitization"
+    },
+    {
+      "id": "6a354311-21b4-4875-9700-238f45b92c0e",
+      "specialist": "Data protection",
+      "title": "Referrer policy",
+      "severity": "low",
+      "status": "attention",
+      "confidence": "high",
+      "evidence": "referrer-policy was not present in the verified response.",
+      "impact": "Sensitive paths or query parameters can be disclosed to destinations through browser referrer behavior.",
+      "remediation": "Set a reviewed Referrer-Policy such as strict-origin-when-cross-origin, subject to product requirements.",
+      "verification": "Request a representative protected route and confirm the referrer-policy response header is present with an appropriate policy.",
+      "reference": "OWASP ASVS v5.0.0 — Data Protection"
+    },
+    {
+      "id": "8753bd14-b077-4dc5-b8ed-6003addb21ba",
+      "specialist": "Application exposure",
+      "title": "MIME sniffing protection",
+      "severity": "low",
+      "status": "attention",
+      "confidence": "high",
+      "evidence": "x-content-type-options was not present in the verified response.",
+      "impact": "Without an explicit no-sniff directive, browsers may infer unexpected content types in edge cases.",
+      "remediation": "Set X-Content-Type-Options: nosniff for relevant responses and validate declared MIME types.",
+      "verification": "Request a representative protected route and confirm the x-content-type-options response header is present with an appropriate policy.",
+      "reference": "OWASP ASVS v5.0.0 — File Handling"
+    },
+    {
+      "id": "4513f3b3-6952-4564-b6b1-a958132561eb",
+      "specialist": "Data protection",
+      "title": "Permissions policy",
+      "severity": "low",
+      "status": "attention",
+      "confidence": "high",
+      "evidence": "permissions-policy was not present in the verified response.",
+      "impact": "Browser features may be available more broadly than the application needs.",
+      "remediation": "Define a Permissions-Policy that disables browser features not required by the product.",
+      "verification": "Request a representative protected route and confirm the permissions-policy response header is present with an appropriate policy.",
+      "reference": "OWASP ASVS v5.0.0 — Secure Coding"
+    },
+    {
+      "id": "cd8aa357-b76e-4c6c-9074-b02e602cda7c",
+      "specialist": "Application exposure",
+      "title": "Technology disclosure",
+      "severity": "info",
+      "status": "pass",
+      "confidence": "high",
+      "evidence": "No Server or X-Powered-By response hint was observed.",
+      "impact": "The response does not expose the common technology headers checked by this review.",
+      "remediation": "Continue to avoid unnecessary technology banners.",
+      "verification": "Inspect representative responses and confirm unnecessary technology-identifying headers are absent.",
+      "reference": "OWASP WSTG — Information Gathering"
+    },
+    {
+      "id": "0048c194-c3fe-42dd-a6ab-c949cd58ba46",
+      "specialist": "Identity & sessions",
+      "title": "Observed cookie hardening is incomplete",
+      "severity": "medium",
+      "status": "attention",
+      "confidence": "medium",
+      "evidence": "1 Set-Cookie response value(s) were observed in the verified response; values are intentionally not retained in the report.",
+      "impact": "Session or state cookies without appropriate browser attributes may have weaker protection against common client-side threats.",
+      "remediation": "Review each session and sensitive-state cookie; apply Secure, HttpOnly, and an appropriate SameSite setting where compatible with the authentication flow.",
+      "verification": "Inspect cookies emitted by sign-in, recovery, and sensitive state transitions without exposing their values in logs.",
+      "reference": "OWASP ASVS v5.0.0 — Authentication and Session Management"
+    },
+    {
+      "id": "78070b1e-2442-4aa1-9614-db0fb0254c73",
+      "specialist": "Application exposure",
+      "title": "Potential HTTP resource reference",
+      "severity": "medium",
+      "status": "attention",
+      "confidence": "medium",
+      "evidence": "The sampled HTML contains at least one http:// resource reference.",
+      "impact": "Insecure subresource references can weaken a secure page or be blocked by browsers.",
+      "remediation": "Replace HTTP resource references with HTTPS sources and add reporting or enforcement through CSP where appropriate.",
+      "verification": "Review production pages in browser developer tools for mixed-content warnings.",
+      "reference": "OWASP ASVS v5.0.0 — Communications Security"
+    }
+  ],
+  "generatedPrompt": "You are improving the security of the authorized web application at https://3000-iqxvav6b63ryvbciag44g-50ce8d6f.us2.manus.computer/.\n\nScope and evidence:\n- This is a defensive remediation task based on a bounded WebScan review.\n- Coverage: Verified public response; Transport and response headers; Visible cookie attributes; Sampled HTML asset references; Public technology hints\n- Limitations: No credentialed testing or authentication bypass attempts; No active exploitation, fuzzing, brute force, or denial-of-service testing; Access control, dependencies, and deployment require owner-provided source or configuration evidence\n\nPrioritized remediation objectives:\n1. HSTS policy (medium) — Set a reviewed Strict-Transport-Security policy once all subdomains are ready for HTTPS.\n2. Content Security Policy (medium) — Implement a restrictive, tested Content-Security-Policy and progressively remove broad script allowances.\n3. Referrer policy (low) — Set a reviewed Referrer-Policy such as strict-origin-when-cross-origin, subject to product requirements.\n4. MIME sniffing protection (low) — Set X-Content-Type-Options: nosniff for relevant responses and validate declared MIME types.\n5. Permissions policy (low) — Define a Permissions-Policy that disables browser features not required by the product.\n6. Observed cookie hardening is incomplete (medium) — Review each session and sensitive-state cookie; apply Secure, HttpOnly, and an appropriate SameSite setting where compatible with the authentication flow.\n7. Potential HTTP resource reference (medium) — Replace HTTP resource references with HTTPS sources and add reporting or enforcement through CSP where appropriate.\n\nImplementation constraints:\n- Preserve existing product behavior and user flows.\n- Do not add tracking, weaken authentication, hardcode secrets, or expose private data in logs.\n- Prefer framework-native security controls and server-side enforcement.\n- Add or update automated tests for every changed security behavior.\n- Validate headers, cookies, error handling, and authorization boundaries where relevant.\n- Return a concise change summary, affected files, tests run, and any remaining assumptions.\n- Do not include exploit payloads, attack automation, or instructions for bypassing controls."
+}

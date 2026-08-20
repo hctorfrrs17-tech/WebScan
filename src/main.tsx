@@ -4,6 +4,7 @@ import App from "./App";
 import "./styles.css";
 import "./overrides.css";
 import "./studysphere-theme.css";
+import "./export-options.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

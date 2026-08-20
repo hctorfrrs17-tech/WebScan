@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildFindings, buildRemediationPrompt, isPrivateAddress, parsePublicTarget } from "./assessment.js";
+import { buildFindings, buildRemediationPrompt, isPrivateAddress, isReadableResponseType, parsePublicTarget } from "./assessment.js";
 
 describe("WebScan defensive assessment boundaries", () => {
   it("accepts ordinary public web URLs and normalizes their path", () => {
@@ -20,6 +20,12 @@ describe("WebScan defensive assessment boundaries", () => {
     expect(isPrivateAddress("192.168.1.20")).toBe(true);
     expect(isPrivateAddress("169.254.169.254")).toBe(true);
     expect(isPrivateAddress("8.8.8.8")).toBe(false);
+  });
+
+  it("reads HTML and plain-text verification responses but not binary content", () => {
+    expect(isReadableResponseType("text/html; charset=utf-8")).toBe(true);
+    expect(isReadableResponseType("text/plain; charset=utf-8")).toBe(true);
+    expect(isReadableResponseType("application/octet-stream")).toBe(false);
   });
 
   it("creates evidence-based attention items without retaining cookie values", () => {

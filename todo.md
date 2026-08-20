@@ -12,3 +12,8 @@
 - [x] Write an English README, contribution guidance, and security policy.
 - [x] Create and publish the GitHub repository for WebScan.
 - [x] Restyle WebScan with StudySphere AI’s retro-technical editorial design system while preserving the defensive review flows.
+- [x] Add JSON, Markdown, and print-ready HTML report exports without exposing secrets or private cookie values.
+- [x] Read plain-text domain-verification files during the authorized verification step.
+- [x] Capture and add real WebScan interface screenshots to repository assets and documentation.
+- [x] Run a verified audit against a temporary website controlled for this test and preserve its report and remediation prompt as documentation evidence.
+- [x] Rewrite the README to be more visual, scannable, emoji-supported, and explicit about the no-account workflow and export formats.
