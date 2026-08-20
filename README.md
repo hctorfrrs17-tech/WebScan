@@ -24,7 +24,6 @@ WebScan coordinates **15 defensive agents** to help an authorized website owner 
 
 > **No account. No sign-in. No password.** WebScan begins with a website URL, an explicit authorization acknowledgement, and a one-time domain-verification file. Local review history stays in the browser on the device being used.
 
-WebScan does **not** promise to find every vulnerability. No public-response review or limited code excerpt can make that guarantee. Instead, every agent reports its evidence source and limits so the owner can decide where a deeper authorized review is needed.
 
 | 🧭 You provide | 🔎 The 15 agents review | 🧰 You receive |
 | --- | --- | --- |
@@ -94,7 +93,7 @@ The API rejects real environment-file names and common live-secret patterns. Evi
 
 ## 📤 PDF-only reports
 
-Every completed review has one export action: **Export PDF**. It opens the browser print dialog with a self-contained A4 report; select **Save to PDF** to store it. WebScan does not offer JSON, Markdown, or HTML report downloads in the product interface.
+Every completed review has one export action: **Export PDF**. It opens the browser print dialog with a self-contained A4 report; select **Save to PDF** to store it. 
 
 | PDF section | What it contains |
 | --- | --- |
@@ -140,11 +139,6 @@ WebScan is a **defensive, owner-authorized** review. It rejects local and privat
 
 > A verification file confirms a minimal level of domain control. It is not a substitute for a formal scope agreement, a penetration test, or a complete application-security review.
 
-## 🧱 Architecture
-
-WebScan uses a React + TypeScript frontend, an Express + TypeScript backend, and structured findings. Reports are user-initiated and bounded; there is no background crawler, continuous scanner, account system, or cloud dashboard.
-
-Read [ARCHITECTURE.md](ARCHITECTURE.md) for the authorization model and [AGENT_COVERAGE.md](AGENT_COVERAGE.md) for the 15-agent evidence model.
 
 ## ✅ Quality checks
 
