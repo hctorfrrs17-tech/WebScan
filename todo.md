@@ -35,4 +35,4 @@
 - [ ] Redesign the workspace and report with a cleaner terminal palette, fewer visual effects, and a revised page structure.
 - [ ] Remove the legacy hero label and validate refreshed desktop and mobile interface captures.
 - [x] Repair the public controlled-audit PDF link or artifact and verify it opens from GitHub.
-- [ ] Replace the GitHub PDF preview link with a reliable direct-download path that avoids the render error.
+- [x] Replace the GitHub PDF preview link with a reliable direct-download path that avoids the render error.
