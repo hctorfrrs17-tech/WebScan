@@ -137,7 +137,7 @@ The PDF below is **real output from a controlled regression fixture**, not a thi
 
 The controlled audit was rendered into a **28-page A4 PDF** after the review. It contains the score and scope, explicit readouts for all 15 agents, the 29 evidence-backed findings, their individual observed signal/required change/acceptance check fields, and the **complete consolidated remediation prompt** on the final page. It does **not** tell an AI coding assistant to generically “review login”, “review storage”, or “review configuration”; every requested change is tied to observed evidence.
 
-**Download the real controlled-audit PDF:** [Open the detailed 15-agent report](examples/controlled-audit-report.pdf)
+**Controlled-audit PDF:** [View the 15-agent report on GitHub](https://github.com/hctorfrrs17-tech/WebScan/blob/main/examples/controlled-audit-report.pdf) · [Download the PDF directly](https://raw.githubusercontent.com/hctorfrrs17-tech/WebScan/main/examples/controlled-audit-report.pdf)
 
 ## 🔐 Safety boundary
 
