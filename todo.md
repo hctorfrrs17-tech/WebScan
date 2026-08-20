@@ -25,3 +25,8 @@
 - [x] Make remediation prompts enumerate specific fixes only for evidence-backed attention findings.
 - [x] Correct the WebScan installation instructions so they match the supported local workflow.
 - [x] Create and deliver a WebScan social preview image aligned with the retro-technical editorial interface.
+- [x] Replace JSON, Markdown, and HTML exports with a PDF-only browser export flow.
+- [x] Structure the PDF with score and scope, findings, and remediation prompt sections across at least three print pages.
+- [x] Update tests, controlled-audit evidence, screenshots, and README for PDF-only reporting.
+- [x] Expand the PDF into detailed per-agent evidence, findings, remediation, and acceptance sections for all 15 defensive agents.
+- [x] Run a controlled authorized audit, generate its detailed PDF report, and link the PDF example from the README.

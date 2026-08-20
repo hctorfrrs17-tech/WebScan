@@ -232,7 +232,13 @@ function scoreFindings(findings: Finding[]) {
 }
 
 export function buildRemediationPrompt(report: Pick<AssessmentReport, "target" | "findings" | "coverage" | "limitations">) {
-  const priorities = report.findings.filter((item) => item.status === "attention").map((item, index) => `${index + 1}. ${item.title} [${item.specialist}; ${item.severity}]\n   - Observed signal: ${item.evidence}\n   - Required change: ${item.remediation}\n   - Acceptance check: ${item.verification}`).join("\n") || "No evidence-backed attention findings were produced. Do not invent changes for generic subsystems; retain the declared coverage limits.";
+  const attention = report.findings.filter((item) => item.status === "attention");
+  const priorities = attention.length
+    ? [...new Set(attention.map((item) => item.specialist))].map((specialist) => {
+      const agentFindings = attention.filter((item) => item.specialist === specialist);
+      return `${specialist}\n${agentFindings.map((item, index) => `  ${index + 1}. ${item.title} [${item.severity}]\n     - Observed signal: ${item.evidence}\n     - Required change: ${item.remediation}\n     - Acceptance check: ${item.verification}`).join("\n")}`;
+    }).join("\n\n")
+    : "No evidence-backed attention findings were produced. Do not invent changes for generic subsystems; retain the declared coverage limits.";
   return `You are improving the security of the authorized web application at ${report.target}.\n\nScope and evidence:\n- This is a defensive remediation task based on a bounded WebScan review.\n- Coverage: ${report.coverage.join("; ")}\n- Limitations: ${report.limitations.join("; ")}\n\nPrioritized remediation objectives:\n${priorities}\n\nImplementation constraints:\n- Preserve existing product behavior and user flows.\n- Do not add tracking, weaken authentication, hardcode secrets, or expose private data in logs.\n- Prefer framework-native security controls and server-side enforcement.\n- Add or update automated tests for every changed security behavior.\n- Validate headers, cookies, error handling, and authorization boundaries where relevant.\n- Return a concise change summary, affected files, tests run, and any remaining assumptions.\n- Do not include exploit payloads, attack automation, or instructions for bypassing controls.`;
 }
 

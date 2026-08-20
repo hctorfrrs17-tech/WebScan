@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { AssessmentReport, Finding, OwnerEvidenceFile, Severity, VerificationChallenge } from "../shared/types";
-import { createReportExport, type ExportFormat } from "./reportExport";
+import { openPdfExport } from "./reportExport";
 
 type ReviewHistoryItem = Pick<AssessmentReport, "id" | "target" | "hostname" | "score" | "grade" | "verifiedAt">;
 
@@ -148,15 +148,9 @@ export default function App() {
     });
   }
 
-  function exportReport(format: ExportFormat) {
+  function exportPdf() {
     if (!report) return;
-    const artifact = createReportExport(report, format);
-    const url = URL.createObjectURL(new Blob([artifact.content], { type: artifact.mimeType }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = artifact.filename;
-    link.click();
-    URL.revokeObjectURL(url);
+    if (!openPdfExport(report)) setError("The PDF window was blocked. Allow popups for WebScan and try again.");
   }
 
   function loadDemo() { setChallenge(null); setError(null); rememberReport(demoReport); setView("overview"); }
@@ -227,7 +221,7 @@ export default function App() {
 
       {report && <section className="report-shell">
         <div className="report-title-row"><div><span className="eyebrow">VERIFIED REVIEW / {report.hostname}</span><h1>Security posture, <em>made actionable.</em></h1><p>Bounded review completed {new Date(report.verifiedAt).toLocaleString()}. The score reflects only the evidence examined.</p></div><div className={scoreGradeClass(report.grade)}><b>{report.grade}</b><span>{report.score}/100</span></div></div>
-        <div className="report-nav"><div><button className={view === "overview" ? "selected" : ""} onClick={() => setView("overview")}>Overview</button><button className={view === "findings" ? "selected" : ""} onClick={() => setView("findings")}>Findings <span>{attentionCount}</span></button><button className={view === "prompt" ? "selected" : ""} onClick={() => setView("prompt")}>Repair prompt</button></div><div className="report-actions"><span>{history.length} local {history.length === 1 ? "review" : "reviews"}</span><div className="export-list" aria-label="Export evidence"><button onClick={() => exportReport("json")}>JSON</button><button onClick={() => exportReport("markdown")}>Markdown</button><button onClick={() => exportReport("html")}>Print HTML</button></div></div></div>
+        <div className="report-nav"><div><button className={view === "overview" ? "selected" : ""} onClick={() => setView("overview")}>Overview</button><button className={view === "findings" ? "selected" : ""} onClick={() => setView("findings")}>Findings <span>{attentionCount}</span></button><button className={view === "prompt" ? "selected" : ""} onClick={() => setView("prompt")}>Repair prompt</button></div><div className="report-actions"><span>{history.length} local {history.length === 1 ? "review" : "reviews"}</span><button className="pdf-export" onClick={exportPdf}>Export PDF <Icon name="arrow" /></button></div></div>
 
         {view === "overview" && <>
           <div className="metric-row"><div><span>POSTURE SCORE</span><strong>{report.score}<small>/100</small></strong><p>{report.grade === "A" || report.grade === "B" ? "Lower observed risk in this bounded review." : "Prioritized improvements are ready for review."}</p></div><div><span>ATTENTION ITEMS</span><strong>{attentionCount}</strong><p>Sorted by observed impact and confidence.</p></div><div><span>AGENT COVERAGE</span><strong>{report.specialists.filter((item) => item.state === "complete").length}<small>/15</small></strong><p>{report.evidenceSummary.ownerEvidenceProvided ? `${report.evidenceSummary.sourceFilesReviewed} owner files reviewed for this report only.` : "Some agents need redacted owner evidence."}</p></div></div>

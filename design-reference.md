@@ -9,3 +9,7 @@ The redesigned landing and report views were checked locally. Both now present t
 Two real interface captures were validated for the repository: the authorization-gated landing workspace and the report overview. The report capture visibly exposes the three safe export choices: JSON, Markdown, and print-ready HTML.
 
 The expanded interface was also checked locally: the landing workspace displays all 15 named agents and the optional redacted owner-evidence intake, while the report displays a 15-agent readout, explicit agent coverage, and a current-review-only evidence summary.
+
+The PDF-only report interface was verified locally. The report navigation now exposes exactly one export control, “Export PDF”; JSON, Markdown, and Print HTML controls are absent from the product interface.
+
+The controlled-audit PDF example was rendered and visually checked. The exported file spans 19 A4 pages, starts with a dedicated score-and-scope page, continues with attributed per-agent readouts that include observed controls plus concrete remediation entries, and ends with a final page that preserves the full consolidated remediation prompt and safety constraints.

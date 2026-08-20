@@ -16,7 +16,7 @@
 
 ![WebScan’s authorization-gated workspace, including the optional redacted owner-evidence intake](assets/webscan-authorized-workspace.webp)
 
-![WebScan’s report interface with posture score, agent readout, local history, and export formats](assets/webscan-report-overview.webp)
+![WebScan’s report interface with posture score, agent readout, local history, and its single PDF export action](assets/webscan-report-overview.webp)
 
 ## ✨ What is WebScan?
 
@@ -92,15 +92,17 @@ Owner evidence is **optional**, but it makes the authentication, authorization, 
 
 The API rejects real environment-file names and common live-secret patterns. Evidence is used for the current in-memory review only; the report keeps a **summary** of files and types reviewed, not their contents.
 
-## 📤 Exports
+## 📤 PDF-only reports
 
-Every completed report can be exported without raw cookie values, credentials, or submitted evidence content. The export controls appear directly beside the report tabs.
+Every completed review has one export action: **Export PDF**. It opens the browser print dialog with a self-contained A4 report; select **Save to PDF** to store it. WebScan does not offer JSON, Markdown, or HTML report downloads in the product interface.
 
-| Format | Best for | Notes |
-| --- | --- | --- |
-| **JSON** | Automation, backup, structured ingestion | Includes findings, limits, agent coverage, and a safe evidence summary. |
-| **Markdown** | GitHub issues, pull requests, project docs | Human-readable 15-agent readout and a copyable remediation brief. |
-| **Print HTML** | Sharing or saving a PDF from the browser print dialog | Self-contained, print-ready report with scope and evidence-handling notices. |
+| PDF section | What it contains |
+| --- | --- |
+| **Score & scope** | Target, grade, posture score, coverage, evidence summary, and explicit limitations. |
+| **Detailed agent readouts** | An attributed section for each of the 15 agents, including its evidence scope, completion state, observed controls, and every evidence-backed finding. Every attention finding specifies an observed signal, why it matters, a required change, and an acceptance check. |
+| **Consolidated remediation prompt** | The complete AI-coding prompt at the end of the PDF, containing only the fixes supported by the preceding agent findings and the defensive implementation constraints. |
+
+The PDF never includes raw cookie values, credentials, submitted evidence contents, tokens, API keys, passwords, or private keys.
 
 ## 🧪 Real controlled audit
 
@@ -126,41 +128,11 @@ The files below are **real output**, not a mock report. WebScan assessed a tempo
 | Client exposure | The page contained an HTTP resource reference. |
 | Owner-evidence agents | The agents identified specific simulated signals and produced targeted corrections: move a literal JWT signing value to server-only configuration, reject client-supplied privilege values, remove or sanitize unsafe HTML rendering, replace wildcard CORS with an allowlist, pin dependencies, and run the container without privileged/root settings. No evidence excerpt was retained. |
 
-### Resulting remediation prompt
+### Detailed PDF result
 
-The exact generated prompt and all evidence-backed findings are included in the downloadable artifacts. Each objective contains the observed signal, the required change, and its acceptance check; it does **not** ask a coding assistant to generically “review login”, “review storage”, or “review configuration”. Its key instruction style was:
+The controlled audit was rendered into a **19-page A4 PDF** after the review. It contains the score and scope, explicit readouts for all 15 agents, the 17 evidence-backed findings, their individual observed signal/required change/acceptance check fields, and the **complete consolidated remediation prompt** on the final page. It does **not** tell an AI coding assistant to generically “review login”, “review storage”, or “review configuration”; every requested change is tied to observed evidence.
 
-```text
-You are improving the security of the authorized web application.
-
-Scope and evidence:
-- This is a defensive remediation task based on a bounded WebScan review.
-- Use the verified public-response evidence and the selected redacted owner evidence only.
-- Respect the declared limits: no credentialed testing, exploitation, fuzzing, brute force, or denial-of-service testing.
-
-Prioritized remediation objectives:
-1. JWT signing value is embedded in source [Authentication agent; high]
-   - Observed signal: Redacted owner evidence contains a JWT signing call with a literal value.
-   - Required change: Read the signing value from a server-only secret at startup, reject startup when it is missing, and rotate the existing value before release.
-   - Acceptance check: Add a startup test that fails without the secret and an integration test that accepts tokens signed with the configured replacement value only.
-2. Client-supplied privilege value accepted [Authorization agent; high]
-   - Observed signal: Redacted owner evidence assigns a role or privilege value directly from a request body.
-   - Required change: Ignore client-supplied privilege fields and enforce role, tenant, and ownership boundaries server-side.
-   - Acceptance check: Submit elevated role fields from an unprivileged client and confirm the protected action is denied.
-3. Unsafe dynamic rendering or execution API used [Input safety agent; high]
-   - Observed signal: Redacted owner evidence uses a dynamic execution or HTML-rendering API.
-   - Required change: Remove the unsafe API or sanitize untrusted HTML with scripts, event attributes, and dangerous URL schemes disallowed.
-   - Acceptance check: Test script tags, event attributes, and `javascript:` URLs and confirm none become active content.
-
-Implementation constraints:
-- Preserve existing product behavior and user flows.
-- Do not add tracking, weaken authentication, hardcode secrets, or expose private data in logs.
-- Add or update automated tests for every changed security behavior.
-- Return the affected files, tests run, and remaining assumptions.
-- Do not include exploit payloads, attack automation, or instructions for bypassing controls.
-```
-
-**Download the real controlled-audit artifacts:** [JSON](examples/controlled-audit-report.json) · [Markdown](examples/controlled-audit-report.md) · [Print HTML](examples/controlled-audit-report.html)
+**Download the real controlled-audit PDF:** [Open the detailed 15-agent report](examples/controlled-audit-report.pdf)
 
 ## 🔐 Safety boundary
 
