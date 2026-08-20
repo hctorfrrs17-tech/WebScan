@@ -2,6 +2,7 @@ import express from "express";
 import { randomBytes, randomUUID } from "node:crypto";
 import { createReport, fetchSafely, parsePublicTarget, type TargetRecord } from "./assessment.js";
 import { validateOwnerEvidence } from "./ownerEvidence.js";
+import { classifyReviewError, redirectIssue, verificationFileIssue } from "./reviewError.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 8787);
@@ -33,7 +34,8 @@ app.post("/api/challenges", async (request, response) => {
     records.set(id, { challenge, ownerEvidence: evidence });
     response.status(201).json({ ...challenge, ownerEvidenceAccepted: evidence.length, evidenceHandling: "current-review-only" });
   } catch (error) {
-    response.status(400).json({ error: error instanceof Error ? error.message : "Unable to prepare the verification challenge." });
+    const issue = classifyReviewError("challenge", error);
+    response.status(400).json({ error: issue.detail, issue });
   }
 });
 
@@ -44,12 +46,14 @@ app.post("/api/challenges/:id/verify", async (request, response) => {
     const verificationUrl = new URL(record.challenge.challengePath, record.challenge.target);
     const verificationResponse = await fetchSafely(verificationUrl);
     if (verificationResponse.status < 200 || verificationResponse.status >= 300 || verificationResponse.html.trim() !== record.challenge.token) {
-      return response.status(422).json({ error: "The verification file was not found or does not contain the expected token yet." });
+      const issue = verificationFileIssue();
+      return response.status(422).json({ error: issue.detail, issue });
     }
     record.verifiedAt = new Date().toISOString();
     response.json({ verifiedAt: record.verifiedAt, hostname: record.challenge.hostname });
   } catch (error) {
-    response.status(422).json({ error: error instanceof Error ? error.message : "WebScan could not verify this domain." });
+    const issue = classifyReviewError("verification", error);
+    response.status(422).json({ error: issue.detail, issue });
   }
 });
 
@@ -60,10 +64,14 @@ app.post("/api/challenges/:id/analyze", async (request, response) => {
   try {
     const target = parsePublicTarget(record.challenge.target);
     const safeResponse = await fetchSafely(target);
-    if (safeResponse.status >= 300 && safeResponse.status < 400) return response.status(422).json({ error: "The target returned a redirect. Start again with its final HTTPS URL so the review remains bounded." });
+    if (safeResponse.status >= 300 && safeResponse.status < 400) {
+      const issue = redirectIssue();
+      return response.status(422).json({ error: issue.detail, issue });
+    }
     response.json(createReport(record, safeResponse));
   } catch (error) {
-    response.status(422).json({ error: error instanceof Error ? error.message : "The defensive review could not be completed." });
+    const issue = classifyReviewError("analysis", error);
+    response.status(422).json({ error: issue.detail, issue });
   }
 });
 

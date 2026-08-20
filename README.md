@@ -107,6 +107,12 @@ Every completed review has one export action: **Export PDF**. It opens the brows
 
 The PDF never includes raw cookie values, credentials, submitted evidence contents, tokens, API keys, passwords, or private keys.
 
+## 🛠️ Clear recovery guidance
+
+If a domain verification or the 15-agent review cannot finish, WebScan now identifies the failed phase and displays a focused recovery panel instead of a generic error. It explains whether the target has an HTTPS/TLS, DNS, timeout, verification-file, redirect, or review-boundary issue and lists safe steps to correct the target-side configuration before retrying. WebScan fails closed: it never continues from unreadable HTTPS, incomplete verification, or partial evidence by fabricating a report.
+
+Read [ERROR_HANDLING.md](ERROR_HANDLING.md) for the complete recovery map.
+
 ## 🧪 Controlled expanded audit
 
 > The PDF below is a report test made with a simple web made with [Manus AI](https://manus.im/app). In a real web ( authentication, password resets, real database, API Keys, secrets...) WebScan would've found *many* more vulnerabilities and therefore the report would be better and the security improvement much better. 

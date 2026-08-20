@@ -58,3 +58,13 @@ export type VerificationChallenge = {
   challengePath: string;
   instructions: string;
 };
+
+export type ReviewPhase = "challenge" | "verification" | "analysis";
+
+export type RecoveryIssue = {
+  phase: ReviewPhase;
+  code: "target-input" | "dns" | "https" | "timeout" | "verification-file" | "redirect" | "unreachable";
+  title: string;
+  detail: string;
+  steps: string[];
+};

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { AssessmentReport, Finding, OwnerEvidenceFile, Severity, VerificationChallenge } from "../shared/types";
+import type { AssessmentReport, Finding, OwnerEvidenceFile, RecoveryIssue, ReviewPhase, Severity, VerificationChallenge } from "../shared/types";
 import { openPdfExport } from "./reportExport";
 
 type ReviewHistoryItem = Pick<AssessmentReport, "id" | "target" | "hostname" | "score" | "grade" | "verifiedAt">;
@@ -70,6 +70,29 @@ function SeverityChip({ severity }: { severity: Severity }) {
   return <span className={`severity severity--${severity}`}>{severity}</span>;
 }
 
+function fallbackIssue(phase: ReviewPhase, detail: string): RecoveryIssue {
+  return {
+    phase,
+    code: "unreachable",
+    title: "WebScan could not complete this phase",
+    detail,
+    steps: [
+      "Confirm that the public HTTPS URL loads from a private browser window.",
+      "Use the deployed production URL rather than a local or preview-only address.",
+      "Correct the target-side problem and retry; WebScan will not create a report from incomplete evidence."
+    ]
+  };
+}
+
+function issueFromPayload(phase: ReviewPhase, payload: unknown, fallback: string): RecoveryIssue {
+  if (payload && typeof payload === "object" && "issue" in payload) {
+    const issue = (payload as { issue?: RecoveryIssue }).issue;
+    if (issue?.title && issue?.detail && Array.isArray(issue.steps)) return issue;
+  }
+  const detail = payload && typeof payload === "object" && "error" in payload && typeof (payload as { error?: unknown }).error === "string" ? (payload as { error: string }).error : fallback;
+  return fallbackIssue(phase, detail);
+}
+
 export default function App() {
   const [target, setTarget] = useState("");
   const [authorized, setAuthorized] = useState(false);
@@ -77,7 +100,7 @@ export default function App() {
   const [challenge, setChallenge] = useState<VerificationChallenge | null>(null);
   const [report, setReport] = useState<AssessmentReport | null>(null);
   const [busy, setBusy] = useState<"challenge" | "verify" | "analyze" | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<RecoveryIssue | null>(null);
   const [copied, setCopied] = useState(false);
   const [view, setView] = useState<"overview" | "findings" | "prompt">("overview");
   const [history, setHistory] = useState<ReviewHistoryItem[]>(() => {
@@ -91,11 +114,11 @@ export default function App() {
   async function collectOwnerEvidence(files: FileList | null) {
     setError(null);
     const selected = Array.from(files ?? []);
-    if (selected.length > 8) { setError("Choose at most 8 redacted text files for this review."); return; }
+    if (selected.length > 8) { setError(fallbackIssue("challenge", "Choose at most 8 redacted text files for this review.")); return; }
     try {
       const prepared = await Promise.all(selected.map(async (file) => ({ name: file.name, content: await file.text() })));
       setOwnerEvidence(prepared);
-    } catch { setError("WebScan could not read the selected evidence files."); }
+    } catch { setError(fallbackIssue("challenge", "WebScan could not read the selected evidence files.")); }
   }
 
   async function requestChallenge() {
@@ -105,9 +128,9 @@ export default function App() {
       setTarget(normalizedTarget);
       const response = await fetch("/api/challenges", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ target: normalizedTarget, authorizationConfirmed: authorized, ownerEvidence }) });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error);
+      if (!response.ok) { setError(issueFromPayload("challenge", payload, "Unable to create a verification challenge.")); return; }
       setChallenge(payload);
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Unable to create a verification challenge."); }
+    } catch { setError(fallbackIssue("challenge", "Unable to create a verification challenge.")); }
     finally { setBusy(null); }
   }
 
@@ -116,9 +139,9 @@ export default function App() {
     try {
       const response = await fetch(`/api/challenges/${challenge.id}/verify`, { method: "POST" });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error);
+      if (!response.ok) { setError(issueFromPayload("verification", payload, "Domain verification failed.")); return; }
       setChallenge({ ...challenge, instructions: `Verified at ${new Date(payload.verifiedAt).toLocaleTimeString()}. You can now run the bounded defensive review.` });
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Domain verification failed."); }
+    } catch { setError(fallbackIssue("verification", "Domain verification failed.")); }
     finally { setBusy(null); }
   }
 
@@ -127,9 +150,9 @@ export default function App() {
     try {
       const response = await fetch(`/api/challenges/${challenge.id}/analyze`, { method: "POST" });
       const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error);
+      if (!response.ok) { setError(issueFromPayload("analysis", payload, "The defensive review did not complete.")); return; }
       rememberReport(payload); setView("overview");
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "The defensive review did not complete."); }
+    } catch { setError(fallbackIssue("analysis", "The defensive review did not complete.")); }
     finally { setBusy(null); }
   }
 
@@ -150,7 +173,7 @@ export default function App() {
 
   function exportPdf() {
     if (!report) return;
-    if (!openPdfExport(report)) setError("The PDF window was blocked. Allow popups for WebScan and try again.");
+    if (!openPdfExport(report)) setError({ phase: "analysis", code: "unreachable", title: "The PDF window was blocked", detail: "Allow popups for WebScan and try the PDF export again.", steps: ["Allow popups for the WebScan local address in your browser.", "Select Export PDF again after allowing the new report window."] });
   }
 
   function loadDemo() { setChallenge(null); setError(null); rememberReport(demoReport); setView("overview"); }
@@ -205,7 +228,7 @@ export default function App() {
           </button>
           <button className="text-button" onClick={loadDemo}>Or explore a safe demo report</button>
         </div>
-        {error && <div className="error-box">{error}</div>}
+        {error && <aside className="error-box" role="alert" aria-live="assertive"><div className="error-copy"><span>FAILED PHASE / {error.phase.toUpperCase()}</span><h3>{error.title}</h3><p>{error.detail}</p></div><ol>{error.steps.map((step) => <li key={step}>{step}</li>)}</ol></aside>}
         {challenge && <div className="challenge-box">
           <div className="challenge-top"><span className={verified ? "verified-pill" : "verify-pill"}>{verified ? "Verified target" : "Verification required"}</span><span>{challenge.hostname}</span></div>
           <p>{challenge.instructions}</p>
