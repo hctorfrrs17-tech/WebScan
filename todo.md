@@ -30,3 +30,5 @@
 - [x] Update tests, controlled-audit evidence, screenshots, and README for PDF-only reporting.
 - [x] Expand the PDF into detailed per-agent evidence, findings, remediation, and acceptance sections for all 15 defensive agents.
 - [x] Run a controlled authorized audit, generate its detailed PDF report, and link the PDF example from the README.
+- [x] Broaden the evidence-backed defensive checks for all 15 agents without adding exploitation or speculative findings.
+- [x] Regenerate the controlled PDF example and documentation after expanding agent coverage.

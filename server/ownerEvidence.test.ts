@@ -22,6 +22,16 @@ describe("owner-provided evidence safeguards", () => {
     expect(findings[0].verification).toContain("script tags");
   });
 
+  it("finds additional concrete source and workflow signals without treating ordinary code as a finding", () => {
+    const evidence = validateOwnerEvidence([
+      { name: "src/redirect.ts", content: "res.redirect(req.query.next);" },
+      { name: "deploy.yml", content: "hostNetwork: true" },
+      { name: "workflow.yml", content: "permissions: write-all" }
+    ]);
+    const findings = buildOwnerEvidenceFindings(evidence);
+    expect(findings.map((item) => item.title)).toEqual(expect.arrayContaining(["Request-controlled redirect target", "Container adds all Linux capabilities or host networking", "Workflow grants broad write permissions"]));
+  });
+
   it("rejects real environment files and likely live credentials", () => {
     expect(() => validateOwnerEvidence([{ name: ".env", content: "API_KEY=redacted" }])).toThrow("real .env");
     expect(() => validateOwnerEvidence([{ name: "config.ts", content: "const token = 'ghp_abcdefghijklmnopqrstuvwx';" }])).toThrow("live secret");

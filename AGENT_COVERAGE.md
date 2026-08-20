@@ -32,6 +32,10 @@ Owners must not submit real credentials, private keys, live connection strings, 
 
 The agents do not use exploit payloads, authentication bypasses, credential attacks, brute force, fuzzing, stealth behavior, denial-of-service activity, arbitrary endpoint discovery, local-network access, or unverified third-party testing. A finding reports observed evidence, confidence, remediation objective, and a verification criterion instead of instructions to exploit a weakness.
 
+## Expanded signal checks
+
+The core agent boundaries remain unchanged, but each agent now checks a broader set of evidence-backed public-response and owner-evidence signals. See [AGENT_EXPANSION.md](AGENT_EXPANSION.md) for the exact expanded signal matrix and its evidence limits.
+
 ## References
 
 - OWASP Application Security Verification Standard v5.0.0: https://owasp.org/www-project-application-security-verification-standard/

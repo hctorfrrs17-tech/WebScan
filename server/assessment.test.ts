@@ -41,6 +41,18 @@ describe("WebScan defensive assessment boundaries", () => {
     expect(findings.find((item) => item.title === "Potential HTTP resource reference")?.status).toBe("attention");
   });
 
+  it("recognizes additional concrete public-response signals without using active attack techniques", () => {
+    const findings = buildFindings({
+      url: "https://example.com",
+      status: 200,
+      headers: new Headers(),
+      html: '<form action="http://example.com/sign-in"></form><script>localStorage.setItem("token", value)</script>'
+    });
+    expect(findings.find((item) => item.title === "Framing control is not observed")?.status).toBe("attention");
+    expect(findings.find((item) => item.title === "HTML form posts to an HTTP action")?.status).toBe("attention");
+    expect(findings.find((item) => item.title === "Security token stored through browser storage API")?.status).toBe("attention");
+  });
+
   it("requires safe constraints in every coding-assistant remediation prompt", () => {
     const prompt = buildRemediationPrompt({
       target: "https://example.com",
