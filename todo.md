@@ -36,6 +36,6 @@
 - [ ] Remove the legacy hero label and validate refreshed desktop and mobile interface captures.
 - [x] Repair the public controlled-audit PDF link or artifact and verify it opens from GitHub.
 - [x] Replace the GitHub PDF preview link with a reliable direct-download path that avoids the render error.
-- [ ] Verify control of hctortech-6yw5mhcg.manus.space, run a bounded defensive WebScan review, and deliver its PDF report.
-- [ ] Resolve the verified public-transport failure without bypassing WebScan's DNS, timeout, redirect, or domain-control safeguards.
+- [x] Verify control of hctortech-6yw5mhcg.manus.space, run a bounded defensive WebScan review, and deliver its PDF report.
+- [x] Resolve the verified public-transport failure without bypassing WebScan's DNS, timeout, redirect, or domain-control safeguards.
 - [x] Show phase-specific verification and 15-agent review errors with safe target-side recovery guidance in the WebScan interface.
