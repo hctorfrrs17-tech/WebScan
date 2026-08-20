@@ -29,6 +29,8 @@ WebScan coordinates **15 defensive agents** to help an authorized website owner 
 | --- | --- | --- |
 | A public website you own or are explicitly authorized to assess | Verified public response signals and, optionally, selected redacted source/configuration material | Score, agent coverage, evidence-backed findings, remediation guidance, verification criteria, and an AI coding prompt |
 
+> TIP: The more information, files, and code you provide, the better the security analysis will be—and consequently, the security of your website or web app can be further improved.
+
 ## 🚀 Quick start
 
 WebScan is a local web application. You need **Git**, **Node.js 22 or later**, and **pnpm**. No API key, database, Docker setup, account, or production secret is required to run the project locally.
@@ -105,7 +107,7 @@ The PDF never includes raw cookie values, credentials, submitted evidence conten
 
 ## 🧪 Real controlled audit
 
-> This test was made with a simple website made with [Manus AI](https://manus.im/app)
+> This test was made with a simple website made with [Manus AI](https://manus.im/app), on a real website (with a database, login, sign-up, password recovery, admin panel, API keys, etc.), WebScan would have found *many* more vulnerabilities and generated a more comprehensive report. That is why, in this security report, each agent found only 1–2 vulnerabilities.
 
 The files below are **real output**, not a mock report. WebScan assessed a temporary website controlled solely for validation. The temporary page intentionally omitted several browser protections, set an incomplete test cookie, and referenced an HTTP asset. It was accompanied by five small redacted owner-evidence files containing deliberate, non-production signals such as a literal JWT signing value, client-controlled role input, unsafe HTML rendering, a wildcard CORS policy, and a privileged deployment setting. The normal `/.well-known/webscan-verification.txt` process completed before the assessment began.
 
